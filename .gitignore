@@ -1,0 +1,16 @@
+node_modules/
+.next/
+next-env.d.ts
+out/
+coverage/
+*.log
+*.tsbuildinfo
+.DS_Store
+.env
+.env.*
+!.env.example
+data/vault/
+data/kinvault.db
+data/kinvault.db-shm
+data/kinvault.db-wal
+output/
