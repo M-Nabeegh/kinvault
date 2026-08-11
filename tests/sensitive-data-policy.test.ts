@@ -36,6 +36,15 @@ describe('payment-card policy', () => {
     ).toEqual({ blocked: false });
   });
 
+  it('does not match a 19-digit prefix inside a separated 20-digit run', () => {
+    expect(
+      isPaymentCardContent({ extractedText: 'Visa card number: 4000-0000-0000-0000-006-0' }),
+    ).toEqual({ blocked: false });
+    expect(
+      isPaymentCardContent({ extractedText: 'Visa card number: 4000 0000 0000 0000 006 0' }),
+    ).toEqual({ blocked: false });
+  });
+
   it('allows ordinary identity and insurance records', () => {
     expect(
       isPaymentCardContent({ category: 'identity', extractedText: 'National ID: DEMO-8472-AB' }),
