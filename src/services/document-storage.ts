@@ -1,4 +1,4 @@
-import { existsSync, lstatSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, lstatSync, mkdirSync, readFileSync, rmSync, rmdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { basename, dirname, isAbsolute, relative, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
@@ -12,8 +12,10 @@ const safeName = (name: string) => {
 export class DocumentStorage {
   private readonly root: string;
 
-  constructor(vaultRoot = resolve(process.cwd(), 'data/vault'), private readonly createId: () => string = randomUUID) {
+  constructor(vaultRoot = process.env.KINVAULT_VAULT_ROOT ?? resolve(process.cwd(), 'data/vault'), private readonly createId: () => string = randomUUID) {
     this.root = resolve(vaultRoot);
+    const workspace = resolve(process.cwd());
+    if (this.root === workspace || !relative(this.root, workspace).startsWith('..')) throw new Error('Vault root must not contain the application workspace');
   }
 
   save(input: { originalName: string; bytes: Uint8Array }): StoredFile {
@@ -30,6 +32,22 @@ export class DocumentStorage {
 
   exists(relativePath: string): boolean {
     return existsSync(this.resolveWithinVault(relativePath));
+  }
+
+  delete(relativePath: string): void {
+    const target = this.resolveWithinVault(relativePath);
+    if (!existsSync(target)) return;
+    unlinkSync(target);
+    const documentDirectory = dirname(target);
+    if (documentDirectory !== this.root) {
+      try { rmdirSync(documentDirectory); } catch { /* Leave a non-empty document directory intact. */ }
+    }
+  }
+
+  deleteVault(): void {
+    if (!existsSync(this.root)) return;
+    if (lstatSync(this.root).isSymbolicLink()) throw new Error('Vault root cannot be a symlink');
+    rmSync(this.root, { force: true, recursive: true });
   }
 
   write(relativePath: string, bytes: Uint8Array): void {

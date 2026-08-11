@@ -74,6 +74,19 @@ export class DocumentRepository {
     return { ...rowToSummary(row), fileName: row.file_name, storagePath: row.storage_path, mimeType: row.mime_type, pageCount: row.page_count, issuedOn: row.issued_on, fields };
   }
 
+  deleteDocument(id: string): DocumentDetail | null {
+    const document = this.getDocument(id);
+    if (!document) return null;
+    this.database.db.prepare('DELETE FROM documents WHERE id = ?').run(id);
+    return document;
+  }
+
+  deleteVaultMetadata(): number {
+    const documentCount = (this.database.db.prepare('SELECT COUNT(*) AS count FROM documents').get() as { count: number }).count;
+    this.database.db.prepare('DELETE FROM people').run();
+    return documentCount;
+  }
+
   saveUpload(input: NewDocumentInput, fields: ExtractedFieldInput[]): DocumentDetail {
     const id = input.id ?? randomUUID();
     const createdAt = now();

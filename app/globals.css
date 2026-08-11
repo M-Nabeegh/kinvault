@@ -149,5 +149,36 @@ kbd { background: #f2f4f7; border: 1px solid #dce1e9; border-radius: 5px; color:
 .review-card__source { margin: 6px 0 0; }
 .review-card__edit { margin-top: 14px; max-width: 440px; }
 .review-card footer { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+.privacy-panel { display: grid; gap: 18px; max-width: 980px; }
+.privacy-panel__header h1 { font-size: clamp(2rem, 3.1vw, 3rem); letter-spacing: -.05em; line-height: 1; margin: 7px 0 10px; }
+.privacy-panel__header p:not(.eyebrow) { color: var(--muted); margin: 0; max-width: 680px; }
+.privacy-panel__grid { display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.privacy-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 1px 2px rgb(24 34 53 / 3%); padding: 22px; }
+.privacy-card h2 { font-size: 1.17rem; letter-spacing: -.025em; margin: 5px 0 8px; }
+.privacy-card p:not(.eyebrow) { color: var(--muted); font-size: .9rem; margin: 0; max-width: 760px; }
+.privacy-card .secondary-button, .privacy-card .danger-button { display: inline-block; margin-top: 17px; }
+.privacy-card--wide { grid-column: 1 / -1; }
+.privacy-card--danger { border-left: 4px solid #c76767; }
+.privacy-document-list { list-style: none; margin: 18px 0 0; padding: 0; }
+.privacy-document-list li { align-items: center; border-top: 1px solid var(--line); display: flex; gap: 16px; justify-content: space-between; padding: 12px 0; }
+.privacy-document-list strong, .privacy-document-list span { display: block; }
+.privacy-document-list strong { font-size: .9rem; }
+.privacy-document-list span { color: var(--muted); font-size: .78rem; margin-top: 3px; text-transform: capitalize; }
+.danger-button { background: var(--rose); border: 1px solid var(--rose); border-radius: 7px; color: white; font-size: .82rem; font-weight: 700; padding: 8px 10px; }
+.danger-button:hover { background: #812d2d; }
+.danger-button--quiet { background: transparent; color: var(--rose); }
+.danger-button--quiet:hover { background: #fff1f1; }
+.empty-state { border: 1px dashed #cbd3df; border-radius: 9px; color: var(--muted); margin-top: 18px; padding: 18px; }
+.empty-state strong { color: var(--ink); font-size: .91rem; }
+.empty-state p { margin: 4px 0 0; }
+.confirm-dialog__backdrop { align-items: center; background: rgb(24 34 53 / 34%); display: flex; inset: 0; justify-content: center; padding: 18px; position: fixed; z-index: 60; }
+.confirm-dialog { background: var(--panel); border: 1px solid var(--line); border-radius: 13px; box-shadow: var(--shadow); display: grid; gap: 14px; max-width: 510px; padding: 25px; width: 100%; }
+.confirm-dialog h2 { font-size: 1.4rem; letter-spacing: -.035em; margin: 0; }
+.confirm-dialog p:not(.eyebrow) { color: var(--muted); margin: 0; }
+.confirm-dialog label { color: #526075; display: grid; font-size: .78rem; font-weight: 700; gap: 7px; }
+.confirm-dialog code { color: var(--ink); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.confirm-dialog input { border: 1px solid #cbd3df; border-radius: 7px; min-height: 40px; padding: 8px 9px; }
+.confirm-dialog input:focus { border-color: var(--indigo); box-shadow: 0 0 0 3px rgb(51 77 128 / 13%); outline: 0; }
+.confirm-dialog footer { display: flex; gap: 8px; justify-content: flex-end; }
 @media (max-width: 900px) { .document-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } .document-table__head { display: none; } .document-table__row { align-items: start; grid-template-columns: 1fr auto; } .document-table__row > :nth-child(2) { color: var(--muted); font-size: .8rem; } .document-table__row > :nth-child(3) { grid-column: 1; } .document-table__row > :nth-child(4) { grid-column: 2; grid-row: 1 / span 2; } }
-@media (max-width: 720px) { .records-panel__header { align-items: flex-start; flex-direction: column; } .document-filters { grid-template-columns: 1fr; } .drawer__backdrop { padding: 0; } .upload-drawer { max-width: none; min-height: 100%; } .source-preview { padding: 18px; } .review-card__meta { align-items: flex-start; flex-direction: column; gap: 4px; } .review-card footer { justify-content: flex-start; } }
+@media (max-width: 720px) { .records-panel__header { align-items: flex-start; flex-direction: column; } .document-filters, .privacy-panel__grid { grid-template-columns: 1fr; } .drawer__backdrop { padding: 0; } .upload-drawer { max-width: none; min-height: 100%; } .source-preview { padding: 18px; } .review-card__meta { align-items: flex-start; flex-direction: column; gap: 4px; } .review-card footer { justify-content: flex-start; } .privacy-document-list li { align-items: flex-start; flex-direction: column; } .confirm-dialog__backdrop { padding: 12px; } }
