@@ -2,12 +2,15 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
+import type { SourceCitation } from '@/domain/types';
 import { Sidebar, type SectionKey } from './sidebar';
 import { SpotlightSearch } from './spotlight-search';
 import { StatusPill } from './status-pill';
+import { SourcePreview } from './source-preview';
 
 export function KinVaultShell({ children, activeSection }: { children: ReactNode; activeSection: SectionKey }) {
+  const [sourceCitation, setSourceCitation] = useState<SourceCitation | null>(null);
   return (
     <div className="app-shell">
       <aside className="app-shell__sidebar">
@@ -28,10 +31,11 @@ export function KinVaultShell({ children, activeSection }: { children: ReactNode
             <p className="eyebrow">Family records</p>
             <StatusPill tone="local">Local only</StatusPill>
           </div>
-          <SpotlightSearch onResult={() => undefined} />
+          <SpotlightSearch onOpenSource={setSourceCitation} onResult={() => undefined} />
         </header>
         <main className="app-shell__content">{children}</main>
       </div>
+      {sourceCitation && <SourcePreview citation={sourceCitation} documentId={sourceCitation.documentId} onClose={() => setSourceCitation(null)} />}
     </div>
   );
 }

@@ -21,6 +21,7 @@ export type ExtractedField = ExtractedFieldInput & { id: string; documentId: str
 export type DocumentDetail = DocumentSummary & { fileName: string; storagePath: string; mimeType: string; pageCount: number; issuedOn: string | null; fields: ExtractedField[] };
 export type ReviewItem = { id: string; fieldId: string; documentId: string; documentTitle: string; personName: string; fieldKey: string; label: string; value: string; confidence: number; reviewStatus: ReviewStatus; reason: string; createdAt: string };
 export type DashboardSnapshot = { documentCount: number; categoryCounts: Array<{ category: DocumentCategory; count: number }>; nextExpiry: DocumentSummary | null; reviewCount: number; recentDocuments: DocumentSummary[] };
+export type ReviewResolution = { action: 'accept' | 'dismiss' | 'correct'; value?: string };
 
 const now = () => new Date().toISOString();
 const rowToSummary = (row: any): DocumentSummary => ({ id: row.id, personId: row.person_id, personName: row.person_name, title: row.title, category: row.category, status: row.status, expiresOn: row.expires_on, createdAt: row.created_at });
@@ -37,6 +38,10 @@ export class DocumentRepository {
 
   hasDocument(id: string): boolean {
     return Boolean(this.database.db.prepare('SELECT 1 FROM documents WHERE id = ?').get(id));
+  }
+
+  hasPerson(id: string): boolean {
+    return Boolean(this.database.db.prepare('SELECT 1 FROM people WHERE id = ?').get(id));
   }
 
   listDashboard(): DashboardSnapshot {
@@ -87,5 +92,28 @@ export class DocumentRepository {
 
   listReviewItems(): ReviewItem[] {
     return this.database.db.prepare('SELECT r.id, r.field_id, r.reason, r.created_at, f.document_id, f.field_key, f.label, f.value, f.confidence, f.review_status, d.title AS document_title, p.display_name AS person_name FROM review_items r JOIN extracted_fields f ON f.id = r.field_id JOIN documents d ON d.id = f.document_id JOIN people p ON p.id = d.person_id WHERE r.resolved_at IS NULL ORDER BY r.created_at').all().map((row: any) => ({ id: row.id, fieldId: row.field_id, documentId: row.document_id, documentTitle: row.document_title, personName: row.person_name, fieldKey: row.field_key, label: row.label, value: row.value, confidence: row.confidence, reviewStatus: row.review_status, reason: row.reason, createdAt: row.created_at }));
+  }
+
+  resolveReviewItem(reviewId: string, resolution: ReviewResolution): ExtractedField | null {
+    const review = this.database.db.prepare('SELECT field_id FROM review_items WHERE id = ? AND resolved_at IS NULL').get(reviewId) as { field_id: string } | undefined;
+    if (!review) return null;
+    if (resolution.action === 'correct' && !resolution.value?.trim()) throw new Error('A corrected value is required.');
+
+    const updatedAt = now();
+    const reviewStatus: ReviewStatus = resolution.action === 'accept' ? 'accepted' : resolution.action === 'dismiss' ? 'dismissed' : 'corrected';
+    const transaction = this.database.db.transaction(() => {
+      if (resolution.action === 'correct') {
+        this.database.db.prepare('UPDATE extracted_fields SET value = ?, review_status = ?, updated_at = ? WHERE id = ?').run(resolution.value!.trim(), reviewStatus, updatedAt, review.field_id);
+      } else {
+        this.database.db.prepare('UPDATE extracted_fields SET review_status = ?, updated_at = ? WHERE id = ?').run(reviewStatus, updatedAt, review.field_id);
+      }
+      this.database.db.prepare('UPDATE review_items SET resolved_at = ? WHERE id = ?').run(updatedAt, reviewId);
+      const document = this.database.db.prepare('SELECT document_id FROM extracted_fields WHERE id = ?').get(review.field_id) as { document_id: string };
+      const pending = this.database.db.prepare('SELECT 1 FROM review_items r JOIN extracted_fields f ON f.id = r.field_id WHERE f.document_id = ? AND r.resolved_at IS NULL LIMIT 1').get(document.document_id);
+      if (!pending) this.database.db.prepare("UPDATE documents SET status = 'indexed' WHERE id = ?").run(document.document_id);
+    });
+    transaction();
+    const field = this.database.db.prepare('SELECT * FROM extracted_fields WHERE id = ?').get(review.field_id) as any;
+    return { id: field.id, documentId: field.document_id, pageNumber: field.page_number, fieldKey: field.field_key, label: field.label, value: field.value, confidence: field.confidence, sourceText: field.source_text, reviewStatus: field.review_status, createdAt: field.created_at, updatedAt: field.updated_at };
   }
 }

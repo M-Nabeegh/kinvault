@@ -1,14 +1,14 @@
 'use client';
 
 import { FormEvent, useEffect, useRef, useState } from 'react';
-import type { AnswerResult } from '@/domain/types';
+import type { AnswerResult, SourceCitation } from '@/domain/types';
 import type { SearchResult } from '@/services/answer-service';
 import { sourceCitationDetails } from './source-citation';
 import { StatusPill } from './status-pill';
 
 export type SearchResponse = { result: AnswerResult; results: SearchResult[] };
 
-export function SpotlightSearch({ onResult }: { onResult: (result: SearchResponse) => void }) {
+export function SpotlightSearch({ onResult, onOpenSource }: { onResult: (result: SearchResponse) => void; onOpenSource?: (citation: SourceCitation) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState('');
   const [response, setResponse] = useState<SearchResponse | null>(null);
@@ -84,6 +84,7 @@ export function SpotlightSearch({ onResult }: { onResult: (result: SearchRespons
                     <strong>{citationDetails.title}</strong>
                     <p>{citationDetails.detail}</p>
                   </div>
+                  {onOpenSource && <button className="table-link" onClick={() => onOpenSource(citation!)} type="button">Open source</button>}
                 </div>
               ) : (
                 <p className="search-popover__hint">{response.result.followUp ?? 'Try a document title, person, or supported expiry question.'}</p>
