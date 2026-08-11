@@ -14,14 +14,18 @@ function confidenceFor(citations: SourceCitation[]): AnswerResult['confidence'] 
   return 'needs verification';
 }
 
-function calendarDay(value: string): string {
+function calendarDay(value: string, allowTime = true): string | null {
   const match = /^(\d{4}-\d{2}-\d{2})/.exec(value);
-  if (!match) throw new Error('Expected an ISO calendar date');
+  if (!match || (!allowTime && match[1] !== value)) return null;
+  const [year, month, day] = match[1].split('-').map(Number);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  if (parsed.getUTCFullYear() !== year || parsed.getUTCMonth() !== month - 1 || parsed.getUTCDate() !== day) return null;
   return match[1];
 }
 
 function expiryWindow(days: number, now: string): { start: string; end: string } {
   const start = calendarDay(now);
+  if (!start) throw new Error('Expected an ISO calendar date');
   const end = new Date(`${start}T00:00:00.000Z`);
   end.setUTCDate(end.getUTCDate() + days);
   return { start, end: end.toISOString().slice(0, 10) };
@@ -61,12 +65,15 @@ export class AnswerService {
     if (question.kind === 'expiring-within-days') {
       const { start, end } = expiryWindow(question.days, now);
       const citations = this.repository.listDocuments()
-        .filter((document) => document.expiresOn && document.expiresOn >= start && document.expiresOn <= end)
-        .sort((left, right) => left.expiresOn!.localeCompare(right.expiresOn!))
-        .flatMap((document) => {
-          const field = this.repository.getDocument(document.id)?.fields.find((candidate) => candidate.fieldKey === 'expires_on');
-          return field ? [citationFor({ page: field.pageNumber, label: field.label, value: field.value, confidence: field.confidence }, document)] : [];
-        });
+        .flatMap((document) => (this.repository.getDocument(document.id)?.fields ?? [])
+          .filter((field) => field.fieldKey === 'expires_on')
+          .flatMap((field) => {
+            const expiry = calendarDay(field.value, false);
+            return expiry ? [{ document, field, expiry }] : [];
+          }))
+        .filter((record) => record.expiry >= start && record.expiry <= end)
+        .sort((left, right) => left.expiry.localeCompare(right.expiry))
+        .map(({ document, field }) => citationFor({ page: field.pageNumber, label: field.label, value: field.value, confidence: field.confidence }, document));
 
       if (!citations.length) return notFound();
       const confidence = confidenceFor(citations);

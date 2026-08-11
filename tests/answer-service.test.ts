@@ -24,6 +24,33 @@ function seededAnswerService(): AnswerService {
   return new AnswerService(repository);
 }
 
+function addExpiryDocument(input: { id: string; expiresOn: string; extractedExpiry: string }): AnswerService {
+  const directory = mkdtempSync(join(tmpdir(), 'kinvault-answer-expiry-'));
+  temporaryDirectories.push(directory);
+  const repository = new DocumentRepository(createDatabase(join(directory, 'vault.sqlite')));
+  repository.savePerson({ id: 'person-expiry', displayName: 'Expiry Test', relationship: 'test', initials: 'ET' });
+  repository.saveUpload({
+    id: input.id,
+    personId: 'person-expiry',
+    title: input.id,
+    category: 'insurance',
+    fileName: `${input.id}.md`,
+    storagePath: `${input.id}/${input.id}.md`,
+    mimeType: 'text/markdown',
+    pageCount: 1,
+    status: 'indexed',
+    expiresOn: input.expiresOn,
+  }, [{
+    pageNumber: 1,
+    fieldKey: 'expires_on',
+    label: 'Coverage ends',
+    value: input.extractedExpiry,
+    confidence: 0.96,
+    sourceText: `Coverage ends: ${input.extractedExpiry}`,
+  }]);
+  return new AnswerService(repository);
+}
+
 describe('AnswerService', () => {
   it("returns Dad's exact passport expiry with a complete source citation", () => {
     const result = seededAnswerService().answer("When does Dad's passport expire?");
@@ -74,5 +101,28 @@ describe('AnswerService', () => {
       citations: [{ documentId: 'demo-dad-passport', value: '2026-11-09' }],
     });
     expect(result.citations).toHaveLength(1);
+  });
+
+  it('includes extracted expiry fields on both inclusive expiry-window boundaries', () => {
+    const start = addExpiryDocument({ id: 'starts-today', expiresOn: '2028-01-01', extractedExpiry: '2026-08-11' });
+    const end = addExpiryDocument({ id: 'ends-window', expiresOn: '2028-01-01', extractedExpiry: '2026-08-13' });
+
+    expect(start.answer('Which documents expire within the next 2 days?', '2026-08-11').citations.map((citation) => citation.documentId)).toEqual(['starts-today']);
+    expect(end.answer('Which documents expire within the next 2 days?', '2026-08-11').citations.map((citation) => citation.documentId)).toEqual(['ends-window']);
+  });
+
+  it('excludes a field outside the window even when document expiry metadata is inside it', () => {
+    const service = addExpiryDocument({ id: 'stale-metadata-inside', expiresOn: '2026-08-12', extractedExpiry: '2027-01-01' });
+
+    expect(service.answer('Which documents expire within the next 2 days?', '2026-08-11')).toMatchObject({ status: 'not-found', citations: [] });
+  });
+
+  it('includes a field inside the window even when document expiry metadata is outside it', () => {
+    const service = addExpiryDocument({ id: 'stale-metadata-outside', expiresOn: '2027-01-01', extractedExpiry: '2026-08-12' });
+
+    expect(service.answer('Which documents expire within the next 2 days?', '2026-08-11')).toMatchObject({
+      status: 'answered',
+      citations: [expect.objectContaining({ documentId: 'stale-metadata-outside', value: '2026-08-12' })],
+    });
   });
 });
