@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f5f6f8" />
+    <meta name="description" content="KinVault | a local-first family document vault with cited answers and visible privacy boundaries." />
+    <title>KinVault | local family records</title>
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="app.js"></script>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-nav">
+        <a class="site-brand" href="#top" aria-label="KinVault home">
+          <span class="brand-mark" aria-hidden="true"><span></span></span>
+          <span>KinVault</span>
+        </a>
+        <nav class="site-links" aria-label="Showcase sections">
+          <a href="#demo">Demo</a>
+          <a href="#system">How it works</a>
+          <a href="#privacy">Privacy</a>
+        </nav>
+        <div class="nav-actions">
+          <span class="boundary-chip"><span class="boundary-dot"></span>synthetic demo</span>
+          <a class="nav-button" href="https://github.com/M-Nabeegh/kinvault" target="_blank" rel="noreferrer">View on GitHub <span aria-hidden="true">↗</span></a>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero" id="top">
+          <div class="hero-copy">
+            <p class="eyebrow">KINVAULT / LOCAL-FIRST FAMILY RECORDS</p>
+            <h1>Family records<br /><em>kept local.</em></h1>
+            <p class="hero-lede">A private cabinet for the records a family reaches for most. Each answer points to the page and field it came from.</p>
+            <div class="hero-actions">
+              <a class="primary-button" href="#demo">Explore the demo <span aria-hidden="true">↓</span></a>
+              <a class="text-link" href="#run-locally">Run it locally <span aria-hidden="true">↗</span></a>
+            </div>
+            <div class="hero-boundary"><span class="boundary-lock" aria-hidden="true">⌁</span><span><strong>Public showcase.</strong> All people, dates, and documents on this page are fictional.</span></div>
+          </div>
+
+          <div class="hero-window" aria-label="Preview of the KinVault dashboard">
+            <div class="window-chrome"><span class="traffic-lights"><i></i><i></i><i></i></span><span class="window-title">kinvault / overview</span><span class="window-mode">LOCAL ONLY</span></div>
+            <div class="window-body">
+              <aside class="mini-sidebar">
+                <div class="mini-logo"><span class="brand-mark brand-mark--small"><span></span></span><strong>KinVault</strong></div>
+                <span class="mini-active">Overview</span><span>Documents</span><span>People</span><span>Needs review</span><span>Privacy</span>
+                <div class="mini-sidebar-note">A local cabinet<br />for family records.</div>
+              </aside>
+              <div class="mini-content">
+                <div class="mini-topline"><span>FAMILY RECORDS</span><span class="mini-pill">Local only</span><div class="mini-search">⌕ <span>Search documents or ask a vault question</span><kbd>⌘K</kbd></div></div>
+                <div class="mini-heading"><div><span class="mini-eyebrow">OVERVIEW</span><h2>Your records,<br />kept in view.</h2></div><span class="mini-date">AUG 11, 2026</span></div>
+                <div class="mini-stats"><div class="mini-card mini-card--alert"><span>EXPIRY RADAR</span><strong>1</strong><p>document within 90 days</p></div><div class="mini-card"><span>INDEXED</span><strong>4</strong><p>synthetic records</p></div><div class="mini-card"><span>REVIEW</span><strong>1</strong><p>field to verify</p></div></div>
+                <div class="mini-lower"><div class="mini-list"><div class="mini-label">RECENTLY INDEXED</div><div class="mini-row"><span class="doc-icon doc-icon--blue">P</span><div><strong>Dad Passport</strong><small>Passport · synthetic</small></div><time>Nov 09</time></div><div class="mini-row"><span class="doc-icon doc-icon--green">I</span><div><strong>Ali Insurance</strong><small>Insurance · synthetic</small></div><time>Jan 31</time></div><div class="mini-row"><span class="doc-icon doc-icon--amber">U</span><div><strong>Family Utility</strong><small>Utility · synthetic</small></div><time>Indexed</time></div></div><div class="mini-quote"><span class="quote-mark">“</span><p>Every answer points back to its indexed source.</p><span>PROVENANCE, BY DEFAULT</span></div></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="demo-section section-frame" id="demo">
+          <div class="section-intro"><div><p class="eyebrow">01 / THE SIGNATURE FLOW</p><h2>Ask a question.<br /><em>See the evidence.</em></h2></div><p>KinVault does not fill gaps with confident prose. It finds an indexed field, shows its confidence, and keeps the source one click away.</p></div>
+          <div class="demo-app">
+            <aside class="demo-rail"><div class="rail-label">FAMILY INDEX</div><button class="person-tab person-tab--active" type="button"><span class="avatar avatar--blue">DR</span><span><strong>Dad Rowan</strong><small>1 passport</small></span><b>›</b></button><button class="person-tab" type="button"><span class="avatar avatar--rose">SR</span><span><strong>Sana Rowan</strong><small>1 identity card</small></span><b>›</b></button><button class="person-tab" type="button"><span class="avatar avatar--green">AR</span><span><strong>Ali Rowan</strong><small>1 insurance record</small></span><b>›</b></button><button class="person-tab" type="button"><span class="avatar avatar--sand">RH</span><span><strong>Rowan household</strong><small>1 utility record</small></span><b>›</b></button><div class="rail-footer"><span class="tiny-lock" aria-hidden="true">⌁</span><span>Local index<br /><strong>Nothing leaves here.</strong></span></div></aside>
+            <div class="demo-main">
+              <div class="demo-main-head"><div><span class="eyebrow">SPOTLIGHT INDEX</span><h3>What do you need to know?</h3></div><span class="demo-count">4 DOCUMENTS</span></div>
+              <form class="question-form" id="question-form"><span class="question-symbol" aria-hidden="true">⌕</span><input id="question-input" autocomplete="off" value="When does Dad's passport expire?" aria-label="Ask KinVault a question" /><button type="submit">Ask vault <span aria-hidden="true">↗</span></button></form>
+              <div class="prompt-list" aria-label="Example questions"><button type="button" data-question="When does Dad's passport expire?">Dad’s passport expiry</button><button type="button" data-question="What is Sana's date of birth?">Sana’s date of birth</button><button type="button" data-question="Which documents expire in the next 90 days?">Next 90 days</button></div>
+              <article class="answer-card" id="answer-card" aria-live="polite"><div class="answer-card-head"><span class="confidence confidence--high"><i></i>HIGH CONFIDENCE</span><span class="answer-type">INDEXED ANSWER</span></div><p class="answer-copy" id="answer-copy">Dad Rowan’s passport expires on <strong>2026-11-09</strong>.</p><div class="citation-card"><div class="citation-leading"><span class="citation-icon">P</span><div><strong id="citation-title">Dad Passport (Synthetic)</strong><small id="citation-meta">Page 2 · Expiry date · 2026-11-09</small></div></div><span class="citation-arrow" aria-hidden="true">↗</span></div><div class="answer-foot"><span>Source field is visible by design.</span><span>CONFIDENCE <strong id="confidence-value">96%</strong></span></div></article>
+            </div>
+          </div>
+        </section>
+
+        <section class="system-section section-frame" id="system">
+          <div class="section-intro section-intro--wide"><div><p class="eyebrow">02 / THE SYSTEM</p><h2>Quiet on the surface.<br /><em>Precise underneath.</em></h2></div><p>One local boundary, a small set of focused services, and a provenance contract that stays intact from upload to answer.</p></div>
+          <div class="system-grid"><article class="system-card"><span class="system-number">01</span><span class="system-icon system-icon--index">⌕</span><h3>Index locally</h3><p>SQLite keeps metadata and extracted fields nearby. Original files stay below a guarded vault root, not in a remote blob.</p><span class="system-rule"></span><small>SQLite · local files · safe paths</small></article><article class="system-card"><span class="system-number">02</span><span class="system-icon system-icon--cite">⌖</span><h3>Cite the field</h3><p>Answers carry the document, page, field ID, value, and confidence that support them. Missing facts stay missing.</p><span class="system-rule"></span><small>Page · field · confidence</small></article><article class="system-card"><span class="system-number">03</span><span class="system-icon system-icon--review">◌</span><h3>Show uncertainty</h3><p>Low-confidence extraction moves to a review queue. People can accept, correct, or dismiss it without losing the original source.</p><span class="system-rule"></span><small>Review · correct · verify</small></article></div>
+        </section>
+
+        <section class="privacy-section section-frame" id="privacy"><div class="privacy-panel"><div><p class="eyebrow">03 / THE BOUNDARY</p><h2>Private by default,<br /><em>clear about limits.</em></h2><p>KinVault is a local-first demo. No sign-in, paid API, external OCR, analytics, or remote storage is required to explore the real app.</p><a class="text-link text-link--light" href="https://github.com/M-Nabeegh/kinvault#privacy-and-security-boundaries" target="_blank" rel="noreferrer">Read the privacy model <span aria-hidden="true">↗</span></a></div><div class="privacy-list"><div><span class="privacy-check">✓</span><span><strong>Synthetic public demo</strong><small>Every person, date, and document is fictional.</small></span></div><div><span class="privacy-check">✓</span><span><strong>Source before answer</strong><small>Not found is a valid answer.</small></span></div><div><span class="privacy-check">✓</span><span><strong>Local controls</strong><small>Export and deletion stay on the machine.</small></span></div></div></div></section>
+
+        <section class="run-section section-frame" id="run-locally"><div class="section-intro"><div><p class="eyebrow">04 / TRY THE REAL APP</p><h2>Clone it.<br /><em>Keep it close.</em></h2></div><p>The GitHub Pages showcase is static by design. The full Next.js app runs locally with SQLite, safe file storage, deterministic extraction, upload controls, and the complete privacy flow.</p></div><div class="run-grid"><div class="code-card"><div class="code-top"><span><i></i><i></i><i></i></span><span>terminal</span></div><pre><code><span class="code-muted"># clone the separate repo</span>
+git clone https://github.com/M-Nabeegh/kinvault.git
+cd kinvault
+npm install
+npm run dev</code></pre><div class="code-foot"><span>Node 20+ · npm</span><span>127.0.0.1:3000</span></div></div><div class="run-notes"><div><span class="run-note-number">A</span><p><strong>Explore the seeded family.</strong><br />Four synthetic records make the first run useful immediately.</p></div><div><span class="run-note-number">B</span><p><strong>Ask a cited question.</strong><br />Try the Dad passport question and open the source field.</p></div><div><span class="run-note-number">C</span><p><strong>Read the README.</strong><br />Architecture, tests, limitations, and privacy boundaries are documented.</p></div><a class="primary-button primary-button--dark" href="https://github.com/M-Nabeegh/kinvault" target="_blank" rel="noreferrer">Open the repository <span aria-hidden="true">↗</span></a></div></div></section>
+      </main>
+
+      <footer class="site-footer"><div class="footer-brand"><span class="brand-mark brand-mark--small"><span></span></span><strong>KinVault</strong><span>·</span><span>family records, kept local</span></div><div class="footer-links"><a href="https://github.com/M-Nabeegh/kinvault" target="_blank" rel="noreferrer">GitHub ↗</a><a href="https://github.com/M-Nabeegh/kinvault/blob/main/README.md" target="_blank" rel="noreferrer">README ↗</a><span>Designed and engineered by Muhammad Nabeegh</span></div></footer>
+    </div>
+  </body>
+</html>
