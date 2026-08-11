@@ -1,6 +1,7 @@
 import type { SourceCitation } from '@/domain/types';
 
 export type ExtractedFieldLike = {
+  id?: string | null;
   page?: number | null;
   label?: string | null;
   value: string;
@@ -13,6 +14,10 @@ export type DocumentLike = {
 };
 
 export function citationFor(field: ExtractedFieldLike, document: DocumentLike): SourceCitation {
+  if (!field.id?.trim()) {
+    throw new Error('A citation requires an extracted field id');
+  }
+
   if (field.page == null || field.page < 1) {
     throw new Error('A citation requires a source page');
   }
@@ -24,6 +29,7 @@ export function citationFor(field: ExtractedFieldLike, document: DocumentLike): 
   return {
     documentId: document.id,
     documentTitle: document.title,
+    fieldId: field.id,
     page: field.page,
     field: field.label,
     value: field.value,

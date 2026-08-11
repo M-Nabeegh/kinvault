@@ -7,6 +7,7 @@ describe('source citation metadata', () => {
     expect(sourceCitationDetails({
       documentId: 'demo-dad-passport',
       documentTitle: 'Dad Passport (Synthetic)',
+      fieldId: 'field-expiry',
       page: 2,
       field: 'Expiry date',
       value: '2026-11-09',
@@ -23,7 +24,7 @@ describe('source citation metadata', () => {
       { id: 'page-1', pageNumber: 1, label: 'Name' },
       { id: 'page-2-expiry', pageNumber: 2, label: 'Expiry date' },
       { id: 'page-2-number', pageNumber: 2, label: 'Passport number' },
-    ], { page: 2, field: 'Expiry date' }).map((field) => field.id)).toEqual(['page-2-expiry']);
+    ], { page: 2, field: 'Expiry date', fieldId: 'page-2-expiry' }).map((field) => field.id)).toEqual(['page-2-expiry']);
   });
 
   it('uses the concrete field id when labels repeat on the cited page', () => {

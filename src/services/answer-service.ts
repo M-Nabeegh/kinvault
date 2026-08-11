@@ -73,7 +73,7 @@ export class AnswerService {
           }))
         .filter((record) => record.expiry >= start && record.expiry <= end)
         .sort((left, right) => left.expiry.localeCompare(right.expiry))
-        .map(({ document, field }) => citationFor({ page: field.pageNumber, label: field.label, value: field.value, confidence: field.confidence }, document));
+        .map(({ document, field }) => citationFor({ id: field.id, page: field.pageNumber, label: field.label, value: field.value, confidence: field.confidence }, document));
 
       if (!citations.length) return notFound();
       const confidence = confidenceFor(citations);
@@ -93,7 +93,7 @@ export class AnswerService {
     const field = this.repository.getDocument(document.id)?.fields.find((candidate) => candidate.fieldKey === fieldKey);
     if (!field) return notFound();
 
-    const citation = citationFor({ page: field.pageNumber, label: field.label, value: field.value, confidence: field.confidence }, document);
+    const citation = citationFor({ id: field.id, page: field.pageNumber, label: field.label, value: field.value, confidence: field.confidence }, document);
     const confidence = confidenceFor([citation]);
     const subject = question.kind === 'passport-expiry' ? `${document.personName}’s passport expires on` : `${document.personName}’s date of birth is`;
     return {

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import type { SafeDocumentDetail } from '@/services/document-response';
 import { citedPreviewFields, type SourcePreviewCitation } from './source-preview-model';
 
-export function SourcePreview({ documentId, onClose, citation }: { documentId: string; onClose(): void; citation?: SourcePreviewCitation }) {
+export function SourcePreview({ documentId, onClose, citation }: { documentId: string; onClose(): void; citation: SourcePreviewCitation }) {
   const [document, setDocument] = useState<SafeDocumentDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,7 +33,7 @@ export function SourcePreview({ documentId, onClose, citation }: { documentId: s
           <div className="source-preview__body">
             <p className="source-preview__note">This preview shows indexed field excerpts from the synthetic fixture. File locations are kept on this device and are not exposed here.</p>
             <dl className="source-preview__fields">
-              {(citation ? citedPreviewFields(document.fields, citation) : document.fields).map((field) => <div key={field.id}><dt>Page {field.pageNumber} · {field.label}</dt><dd><strong>{field.value}</strong><span>{field.sourceText}</span><small>{Math.round(field.confidence * 100)}% confidence · {field.reviewStatus}</small></dd></div>)}
+              {citedPreviewFields(document.fields, citation).map((field) => <div key={field.id}><dt>Page {field.pageNumber} · {field.label}</dt><dd><strong>{field.value}</strong><span>{field.sourceText}</span><small>{Math.round(field.confidence * 100)}% confidence · {field.reviewStatus}</small></dd></div>)}
             </dl>
           </div>
         )}

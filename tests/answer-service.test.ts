@@ -7,6 +7,7 @@ import { DocumentRepository } from '@/data/repository';
 import { seedDemoData } from '@/data/seed';
 import { DocumentStorage } from '@/services/document-storage';
 import { AnswerService } from '@/services/answer-service';
+import { citedPreviewFields } from '../components/source-preview-model';
 
 const temporaryDirectories: string[] = [];
 
@@ -62,6 +63,7 @@ describe('AnswerService', () => {
       citations: [{
         documentId: 'demo-dad-passport',
         documentTitle: 'Dad Passport (Synthetic)',
+        fieldId: expect.any(String),
         page: 2,
         field: 'Expiry date',
         value: '2026-11-09',
@@ -124,5 +126,21 @@ describe('AnswerService', () => {
       status: 'answered',
       citations: [expect.objectContaining({ documentId: 'stale-metadata-outside', value: '2026-08-12' })],
     });
+  });
+
+  it('keeps the Spotlight citation pinned to one field when labels repeat on a page', () => {
+    const repository = new DocumentRepository(createDatabase());
+    repository.savePerson({ id: 'person-dad', displayName: 'Dad Rowan', relationship: 'parent', initials: 'DR' });
+    repository.saveUpload({
+      id: 'document-passport', personId: 'person-dad', title: 'Dad Passport (Synthetic)', category: 'passport', fileName: 'dad.md', storagePath: 'document-passport/dad.md', mimeType: 'text/markdown', pageCount: 2, status: 'indexed',
+    }, [
+      { id: 'field-cited', pageNumber: 2, fieldKey: 'expires_on', label: 'Expiry date', value: '2026-11-09', confidence: 0.96, sourceText: 'Expiry date: 2026-11-09' },
+      { id: 'field-other', pageNumber: 2, fieldKey: 'document_note', label: 'Expiry date', value: 'not the cited value', confidence: 0.96, sourceText: 'Expiry date: not the cited value' },
+    ]);
+
+    const citation = new AnswerService(repository).answer("When does Dad's passport expire?").citations[0];
+
+    expect(citation).toMatchObject({ fieldId: 'field-cited' });
+    expect(citedPreviewFields(repository.getDocument('document-passport')!.fields, citation).map((field) => field.id)).toEqual(['field-cited']);
   });
 });

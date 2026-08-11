@@ -8,6 +8,7 @@ export type ExpiryWindow = {
 export type SourceCitation = {
   documentId: string;
   documentTitle: string;
+  fieldId: string;
   page: number;
   field: string;
   value: string;

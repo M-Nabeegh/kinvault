@@ -2,10 +2,10 @@ import type { SourceCitation } from '@/domain/types';
 
 export type PreviewField = { id?: string; pageNumber: number; label: string };
 export type CitationField = PreviewField & { id: string; value: string; confidence: number };
-export type SourcePreviewCitation = Pick<SourceCitation, 'documentId' | 'documentTitle' | 'page' | 'field' | 'value' | 'confidence'> & { fieldId?: string };
+export type SourcePreviewCitation = SourceCitation;
 
 export function citedPreviewFields<T extends PreviewField>(fields: T[], citation: Pick<SourcePreviewCitation, 'page' | 'field' | 'fieldId'>): T[] {
-  return fields.filter((field) => field.pageNumber === citation.page && field.label === citation.field && (!citation.fieldId || field.id === citation.fieldId));
+  return fields.filter((field) => field.pageNumber === citation.page && field.label === citation.field && field.id === citation.fieldId);
 }
 
 export function documentCitation(document: { id: string; title: string; fields: CitationField[] }): SourcePreviewCitation | null {
