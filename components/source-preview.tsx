@@ -1,11 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { SourceCitation } from '@/domain/types';
 import type { SafeDocumentDetail } from '@/services/document-response';
-import { citedPreviewFields } from './source-preview-model';
+import { citedPreviewFields, type SourcePreviewCitation } from './source-preview-model';
 
-export function SourcePreview({ documentId, onClose, citation }: { documentId: string; onClose(): void; citation?: Pick<SourceCitation, 'page' | 'field'> }) {
+export function SourcePreview({ documentId, onClose, citation }: { documentId: string; onClose(): void; citation?: SourcePreviewCitation }) {
   const [document, setDocument] = useState<SafeDocumentDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { sourceCitationDetails } from '../components/source-citation';
-import { citedPreviewFields } from '../components/source-preview-model';
+import { citedPreviewFields, documentCitation } from '../components/source-preview-model';
 
 describe('source citation metadata', () => {
   it('keeps the indexed source available as plain metadata before source preview exists', () => {
@@ -24,5 +24,28 @@ describe('source citation metadata', () => {
       { id: 'page-2-expiry', pageNumber: 2, label: 'Expiry date' },
       { id: 'page-2-number', pageNumber: 2, label: 'Passport number' },
     ], { page: 2, field: 'Expiry date' }).map((field) => field.id)).toEqual(['page-2-expiry']);
+  });
+
+  it('uses the concrete field id when labels repeat on the cited page', () => {
+    expect(citedPreviewFields([
+      { id: 'first-expiry', pageNumber: 2, label: 'Expiry date' },
+      { id: 'second-expiry', pageNumber: 2, label: 'Expiry date' },
+    ], { page: 2, field: 'Expiry date', fieldId: 'second-expiry' }).map((field) => field.id)).toEqual(['second-expiry']);
+  });
+
+  it('derives a concrete source citation from an indexed document field', () => {
+    expect(documentCitation({
+      id: 'demo-dad-passport',
+      title: 'Dad Passport (Synthetic)',
+      fields: [{ id: 'field-expiry', pageNumber: 2, label: 'Expiry date', value: '2026-11-09', confidence: 0.96 }],
+    })).toEqual({
+      documentId: 'demo-dad-passport',
+      documentTitle: 'Dad Passport (Synthetic)',
+      page: 2,
+      field: 'Expiry date',
+      value: '2026-11-09',
+      confidence: 0.96,
+      fieldId: 'field-expiry',
+    });
   });
 });

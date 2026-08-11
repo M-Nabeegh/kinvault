@@ -12,6 +12,8 @@ describe('ReviewService', () => {
     }, [{ id: 'field-expiry', pageNumber: 2, fieldKey: 'expires_on', label: 'Expiry date', value: '2028-04-13', confidence: 0.62, sourceText: 'Expiry date: 2028-04-13', reviewStatus: 'pending' }]);
     const review = repository.listReviewItems()[0];
 
+    expect(review).toMatchObject({ pageNumber: 2, sourceText: 'Expiry date: 2028-04-13' });
+
     const result = new ReviewService(repository).resolve(review.id, { action: 'correct', value: '2028-04-18' });
 
     expect(result).toMatchObject({

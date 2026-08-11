@@ -19,7 +19,7 @@ export type PersonSummary = { id: string; displayName: string; relationship: str
 export type DocumentSummary = { id: string; personId: string; personName: string; title: string; category: DocumentCategory; status: DocumentStatus; expiresOn: string | null; createdAt: string };
 export type ExtractedField = ExtractedFieldInput & { id: string; documentId: string; reviewStatus: ReviewStatus; createdAt: string; updatedAt: string };
 export type DocumentDetail = DocumentSummary & { fileName: string; storagePath: string; mimeType: string; pageCount: number; issuedOn: string | null; fields: ExtractedField[] };
-export type ReviewItem = { id: string; fieldId: string; documentId: string; documentTitle: string; personName: string; fieldKey: string; label: string; value: string; confidence: number; reviewStatus: ReviewStatus; reason: string; createdAt: string };
+export type ReviewItem = { id: string; fieldId: string; documentId: string; documentTitle: string; personName: string; pageNumber: number; fieldKey: string; label: string; value: string; confidence: number; sourceText: string; reviewStatus: ReviewStatus; reason: string; createdAt: string };
 export type DashboardSnapshot = { documentCount: number; categoryCounts: Array<{ category: DocumentCategory; count: number }>; nextExpiry: DocumentSummary | null; reviewCount: number; recentDocuments: DocumentSummary[] };
 export type ReviewResolution = { action: 'accept' | 'dismiss' | 'correct'; value?: string };
 
@@ -91,7 +91,7 @@ export class DocumentRepository {
   }
 
   listReviewItems(): ReviewItem[] {
-    return this.database.db.prepare('SELECT r.id, r.field_id, r.reason, r.created_at, f.document_id, f.field_key, f.label, f.value, f.confidence, f.review_status, d.title AS document_title, p.display_name AS person_name FROM review_items r JOIN extracted_fields f ON f.id = r.field_id JOIN documents d ON d.id = f.document_id JOIN people p ON p.id = d.person_id WHERE r.resolved_at IS NULL ORDER BY r.created_at').all().map((row: any) => ({ id: row.id, fieldId: row.field_id, documentId: row.document_id, documentTitle: row.document_title, personName: row.person_name, fieldKey: row.field_key, label: row.label, value: row.value, confidence: row.confidence, reviewStatus: row.review_status, reason: row.reason, createdAt: row.created_at }));
+    return this.database.db.prepare('SELECT r.id, r.field_id, r.reason, r.created_at, f.document_id, f.page_number, f.field_key, f.label, f.value, f.confidence, f.source_text, f.review_status, d.title AS document_title, p.display_name AS person_name FROM review_items r JOIN extracted_fields f ON f.id = r.field_id JOIN documents d ON d.id = f.document_id JOIN people p ON p.id = d.person_id WHERE r.resolved_at IS NULL ORDER BY r.created_at').all().map((row: any) => ({ id: row.id, fieldId: row.field_id, documentId: row.document_id, documentTitle: row.document_title, personName: row.person_name, pageNumber: row.page_number, fieldKey: row.field_key, label: row.label, value: row.value, confidence: row.confidence, sourceText: row.source_text, reviewStatus: row.review_status, reason: row.reason, createdAt: row.created_at }));
   }
 
   resolveReviewItem(reviewId: string, resolution: ReviewResolution): ExtractedField | null {

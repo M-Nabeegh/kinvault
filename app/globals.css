@@ -137,6 +137,7 @@ kbd { background: #f2f4f7; border: 1px solid #dce1e9; border-radius: 5px; color:
 .person-timeline__dot { background: var(--indigo); border: 3px solid var(--panel); border-radius: 50%; height: 11px; left: -22px; position: absolute; top: 4px; width: 11px; }
 .person-timeline li strong { font-size: .88rem; }
 .person-timeline li p { color: var(--muted); font-size: .75rem; margin: 2px 0 0; text-transform: capitalize; }
+.person-timeline__source { margin-top: 9px; padding: 5px 7px; }
 .person-timeline time { color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .7rem; text-align: right; }
 .review-queue__count { background: var(--amber-soft); border: 1px solid #f0d7b4; border-radius: 999px; color: var(--amber); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .73rem; font-weight: 700; padding: 6px 9px; }
 .review-queue__list { display: grid; gap: 12px; max-width: 840px; }
