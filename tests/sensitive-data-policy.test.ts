@@ -18,6 +18,24 @@ describe('payment-card policy', () => {
     ).toMatchObject({ blocked: true });
   });
 
+  it('blocks a Luhn-valid 19-digit number with separators', () => {
+    expect(
+      isPaymentCardContent({ extractedText: 'Visa card number: 4000-0000-0000-0000-006' }),
+    ).toMatchObject({ blocked: true });
+  });
+
+  it('does not treat a 12-digit number as a payment-card number', () => {
+    expect(
+      isPaymentCardContent({ extractedText: 'Visa card number: 4000 0000 0000' }),
+    ).toEqual({ blocked: false });
+  });
+
+  it('does not match a 19-digit card-like substring inside a 20-digit run', () => {
+    expect(
+      isPaymentCardContent({ extractedText: 'Visa card number: 40000000000000000060' }),
+    ).toEqual({ blocked: false });
+  });
+
   it('allows ordinary identity and insurance records', () => {
     expect(
       isPaymentCardContent({ category: 'identity', extractedText: 'National ID: DEMO-8472-AB' }),

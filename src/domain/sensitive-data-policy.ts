@@ -6,7 +6,7 @@ export type SensitiveDataInput = {
 
 const PAYMENT_CARD_CATEGORY = /\b(?:payment|credit|debit|bank)\s*-?\s*card\b/i;
 const PAYMENT_CARD_LANGUAGE = /\b(?:credit|debit|payment|visa|mastercard|amex|american express|card\s+number|cvv|cvc)\b/i;
-const CARD_NUMBER = /(?:\d[ -]?){12,18}\d/g;
+const CARD_NUMBER = /(?<!\d)(?:\d[ -]?){12,18}\d(?!\d)/g;
 
 function isLuhnValid(value: string): boolean {
   const digits = value.replace(/\D/g, '');
