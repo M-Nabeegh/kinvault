@@ -3,6 +3,7 @@ node_modules/
 out/
 coverage/
 *.log
+*.tsbuildinfo
 .DS_Store
 .env
 .env.*
@@ -12,4 +13,3 @@ data/kinvault.db
 data/kinvault.db-shm
 data/kinvault.db-wal
 .superpowers/
-
