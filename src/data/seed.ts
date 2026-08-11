@@ -22,8 +22,12 @@ export function seedDemoData(repository: DocumentRepository, storage: DocumentSt
   for (const person of people) repository.savePerson(person);
   const extractor = new DeterministicExtractionService();
   for (const fixture of fixtures) {
-    if (repository.hasDocument(fixture.id)) continue;
     const text = readFileSync(join(fixtureRoot, fixture.name), 'utf8');
+    const existing = repository.getDocument(fixture.id);
+    if (existing) {
+      if (!storage.exists(existing.storagePath)) storage.write(existing.storagePath, new TextEncoder().encode(text));
+      continue;
+    }
     const stored = storage.save({ originalName: fixture.name, bytes: new TextEncoder().encode(text) });
     const extraction = extractor.extractFixtureText(text);
     repository.saveUpload({ id: fixture.id, personId: fixture.personId, title: fixture.title, category: fixture.category, fileName: stored.safeFileName, storagePath: stored.relativePath, mimeType: 'text/markdown', pageCount: extraction.pageCount, status: extraction.fields.some((field) => field.confidence < 0.75) ? 'review' : 'indexed', expiresOn: fixture.expiresOn }, extraction.fields);

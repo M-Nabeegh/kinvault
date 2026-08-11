@@ -64,4 +64,14 @@ describe('DocumentStorage', () => {
     expect(stored.relativePath).toBe('document-1/dad-passport.md');
     expect(new TextDecoder().decode(storage.read(stored.relativePath))).toBe('synthetic fixture');
   });
+
+  it('reports whether a safe vault-relative file exists', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'kinvault-storage-'));
+    temporaryDirectories.push(directory);
+    const storage = new DocumentStorage(directory, () => 'document-1');
+    const stored = storage.save({ originalName: 'synthetic.md', bytes: new Uint8Array() });
+
+    expect(storage.exists(stored.relativePath)).toBe(true);
+    expect(storage.exists('missing/synthetic.md')).toBe(false);
+  });
 });

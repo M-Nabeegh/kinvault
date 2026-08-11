@@ -20,16 +20,24 @@ export class DocumentStorage {
     const documentId = this.createId();
     const safeFileName = safeName(input.originalName);
     const relativePath = `${documentId}/${safeFileName}`;
-    mkdirSync(this.root, { recursive: true });
-    const target = this.resolveWithinVault(relativePath);
-    mkdirSync(dirname(target), { recursive: true });
-    this.resolveWithinVault(relativePath);
-    writeFileSync(target, input.bytes);
+    this.write(relativePath, input.bytes);
     return { documentId, originalName: input.originalName, safeFileName, relativePath, byteLength: input.bytes.byteLength };
   }
 
   read(relativePath: string): Uint8Array {
     return new Uint8Array(readFileSync(this.resolveWithinVault(relativePath)));
+  }
+
+  exists(relativePath: string): boolean {
+    return existsSync(this.resolveWithinVault(relativePath));
+  }
+
+  write(relativePath: string, bytes: Uint8Array): void {
+    mkdirSync(this.root, { recursive: true });
+    const target = this.resolveWithinVault(relativePath);
+    mkdirSync(dirname(target), { recursive: true });
+    this.resolveWithinVault(relativePath);
+    writeFileSync(target, bytes);
   }
 
   private resolveWithinVault(relativePath: string): string {

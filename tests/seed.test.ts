@@ -45,4 +45,20 @@ describe('seedDemoData', () => {
     expect(repository.listPeople()).toHaveLength(4);
     expect(repository.listReviewItems()).toEqual([expect.objectContaining({ reviewStatus: 'pending' })]);
   });
+
+  it('restores a missing vault fixture for an existing seeded document', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'kinvault-seed-'));
+    temporaryDirectories.push(directory);
+    const repository = new DocumentRepository(createDatabase(join(directory, 'vault.sqlite')));
+    const storage = new DocumentStorage(join(directory, 'vault'));
+    seedDemoData(repository, storage);
+    const passport = repository.getDocument('demo-dad-passport')!;
+    rmSync(join(directory, 'vault', passport.storagePath));
+
+    expect(() => storage.read(passport.storagePath)).toThrow();
+    seedDemoData(repository, storage);
+
+    expect(new TextDecoder().decode(storage.read(passport.storagePath))).toContain('Synthetic demo document');
+    expect(repository.listDocuments()).toHaveLength(4);
+  });
 });
