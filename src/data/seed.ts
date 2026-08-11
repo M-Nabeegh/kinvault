@@ -19,10 +19,10 @@ const fixtures: Array<{ id: string; personId: string; name: string; title: strin
 ];
 
 export function seedDemoData(repository: DocumentRepository, storage: DocumentStorage): void {
-  if (repository.hasDocument('demo-dad-passport')) return;
   for (const person of people) repository.savePerson(person);
   const extractor = new DeterministicExtractionService();
   for (const fixture of fixtures) {
+    if (repository.hasDocument(fixture.id)) continue;
     const text = readFileSync(join(fixtureRoot, fixture.name), 'utf8');
     const stored = storage.save({ originalName: fixture.name, bytes: new TextEncoder().encode(text) });
     const extraction = extractor.extractFixtureText(text);

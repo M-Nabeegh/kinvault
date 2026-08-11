@@ -31,7 +31,7 @@ export class DocumentRepository {
   savePerson(input: NewPersonInput): PersonSummary {
     const id = input.id ?? randomUUID();
     const createdAt = now();
-    this.database.db.prepare('INSERT INTO people (id, display_name, relationship, initials, created_at) VALUES (?, ?, ?, ?, ?)').run(id, input.displayName, input.relationship, input.initials, createdAt);
+    this.database.db.prepare('INSERT INTO people (id, display_name, relationship, initials, created_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET display_name = excluded.display_name, relationship = excluded.relationship, initials = excluded.initials').run(id, input.displayName, input.relationship, input.initials, createdAt);
     return { id, displayName: input.displayName, relationship: input.relationship, initials: input.initials, documentCount: 0 };
   }
 
