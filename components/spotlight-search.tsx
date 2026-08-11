@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import type { AnswerResult } from '@/domain/types';
 import type { SearchResult } from '@/services/answer-service';
+import { sourceCitationDetails } from './source-citation';
 import { StatusPill } from './status-pill';
 
 export type SearchResponse = { result: AnswerResult; results: SearchResult[] };
@@ -48,6 +49,7 @@ export function SpotlightSearch({ onResult }: { onResult: (result: SearchRespons
   }
 
   const citation = response?.result.citations[0];
+  const citationDetails = citation ? sourceCitationDetails(citation) : null;
 
   return (
     <div className="spotlight">
@@ -75,14 +77,13 @@ export function SpotlightSearch({ onResult }: { onResult: (result: SearchRespons
                 <StatusPill tone={response.result.status === 'answered' ? 'local' : 'review'}>{response.result.confidence}</StatusPill>
                 <p>{response.result.answer}</p>
               </div>
-              {citation ? (
+              {citationDetails ? (
                 <div className="source-result">
                   <div>
-                    <p className="eyebrow">Source result</p>
-                    <strong>{citation.documentTitle}</strong>
-                    <p>Page {citation.page} · {citation.field}: {citation.value}</p>
+                    <p className="eyebrow">{citationDetails.label}</p>
+                    <strong>{citationDetails.title}</strong>
+                    <p>{citationDetails.detail}</p>
                   </div>
-                  <button className="text-button" type="button">Open source <span aria-hidden="true">↗</span></button>
                 </div>
               ) : (
                 <p className="search-popover__hint">{response.result.followUp ?? 'Try a document title, person, or supported expiry question.'}</p>

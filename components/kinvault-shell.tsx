@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { Sidebar, type SectionKey } from './sidebar';
 import { SpotlightSearch } from './spotlight-search';
@@ -10,16 +11,20 @@ export function KinVaultShell({ children, activeSection }: { children: ReactNode
   return (
     <div className="app-shell">
       <aside className="app-shell__sidebar">
-        <a className="brand" href="/" aria-label="KinVault overview">
+        <Link className="brand" href="/" aria-label="KinVault overview">
           <Image alt="" height={32} priority src="/kinvault-mark.svg" width={32} />
           <span>KinVault</span>
-        </a>
+        </Link>
         <Sidebar activeSection={activeSection} />
         <p className="sidebar-note">A local cabinet for the family records you choose to keep.</p>
       </aside>
       <div className="app-shell__workspace">
         <header className="topbar">
           <div className="topbar__identity">
+            <Link className="mobile-brand" href="/" aria-label="KinVault overview">
+              <Image alt="" height={24} src="/kinvault-mark.svg" width={24} />
+              <span>KinVault</span>
+            </Link>
             <p className="eyebrow">Family records</p>
             <StatusPill tone="local">Local only</StatusPill>
           </div>
