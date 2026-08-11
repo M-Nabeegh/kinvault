@@ -31,12 +31,33 @@ function fixtureVault() {
   return { controls: new VaultControls(repository, storage), database, repository, storage, stored };
 }
 
+async function streamedChunks(response: Response): Promise<Uint8Array[]> {
+  expect(response.body).not.toBeNull();
+  const reader = response.body!.getReader();
+  const chunks: Uint8Array[] = [];
+  while (true) {
+    const next = await reader.read();
+    if (next.done) return chunks;
+    chunks.push(next.value);
+  }
+}
+
+function joinChunks(chunks: Uint8Array[]): Uint8Array {
+  const bytes = new Uint8Array(chunks.reduce((size, chunk) => size + chunk.byteLength, 0));
+  let offset = 0;
+  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+  return bytes;
+}
+
 describe('privacy controls', () => {
   it('exports a local ZIP with synthetic-safe metadata and cited source fields, never an absolute vault path', async () => {
     const response = await exportVault();
-    const text = new TextDecoder().decode(await response.arrayBuffer());
+    const chunks = await streamedChunks(response);
+    const text = new TextDecoder().decode(joinChunks(chunks));
 
     expect(response.headers.get('content-type')).toContain('application/zip');
+    expect(chunks.length).toBeGreaterThan(4);
+    expect(new TextDecoder().decode(chunks[0].slice(0, 4))).toBe('PK\x03\x04');
     expect(text).toContain('metadata.json');
     expect(text).toContain('"dataClassification": "synthetic-demo-data"');
     expect(text).toContain('Dad Passport (Synthetic)');

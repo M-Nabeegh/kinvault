@@ -3,6 +3,6 @@ import { DocumentStorage } from '@/services/document-storage';
 import { VaultControls } from '@/services/vault-controls';
 
 export function GET(): Response {
-  const archive = new VaultControls(demoRepository(), new DocumentStorage()).createExport();
+  const archive = new VaultControls(demoRepository(), new DocumentStorage()).createExportStream();
   return new Response(archive, { headers: { 'content-disposition': 'attachment; filename="kinvault-local-export.zip"', 'content-type': 'application/zip' } });
 }

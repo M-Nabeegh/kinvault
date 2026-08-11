@@ -60,7 +60,7 @@ KinVault makes no external OCR, analytics, AI, or remote storage request by defa
 
 ## Privacy controls
 
-`GET /api/export` downloads an uncompressed local ZIP containing `metadata.json` and vault-relative file entries. The metadata retains safe document details and source fields, but never absolute paths. This is the v1 deterministic local-export alternative: the archive is assembled on-device in memory for the small demo vault, without a remote service or an archive upload. Removing one document requires typing `DELETE DOCUMENT` and removes its metadata, extracted fields, and matching vault file. Deleting the vault requires exactly `DELETE MY VAULT`; it removes only the configured vault root and its metadata. Both actions are irreversible in this demo.
+`GET /api/export` downloads an uncompressed local ZIP containing `metadata.json` and vault-relative file entries. The metadata retains safe document details and source fields, but never absolute paths. The response is assembled on-device as a Web stream: each local file is read and emitted one at a time, so the archive is never buffered as one large payload and no remote service or upload is involved. Removing one document requires typing `DELETE DOCUMENT` and removes its metadata, extracted fields, and matching vault file. Deleting the vault requires exactly `DELETE MY VAULT`; it removes only the configured vault root and its metadata. Both actions are irreversible in this demo.
 
 ## After each feature: where to look
 

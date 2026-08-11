@@ -1,4 +1,4 @@
-import { existsSync, lstatSync, mkdirSync, readFileSync, rmSync, rmdirSync, unlinkSync, writeFileSync } from 'node:fs';
+import { createReadStream, existsSync, lstatSync, mkdirSync, readFileSync, rmSync, rmdirSync, unlinkSync, writeFileSync, type ReadStream } from 'node:fs';
 import { basename, dirname, isAbsolute, relative, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
@@ -28,6 +28,10 @@ export class DocumentStorage {
 
   read(relativePath: string): Uint8Array {
     return new Uint8Array(readFileSync(this.resolveWithinVault(relativePath)));
+  }
+
+  stream(relativePath: string): ReadStream {
+    return createReadStream(this.resolveWithinVault(relativePath));
   }
 
   exists(relativePath: string): boolean {
