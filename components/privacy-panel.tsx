@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { DocumentSummary } from '@/data/repository';
 import { ConfirmDialog } from './confirm-dialog';
 import { EmptyState } from './empty-state';
+import { requestDocumentRemoval, requestVaultRemoval } from '@/services/privacy-requests';
 
 const documentPhrase = 'DELETE DOCUMENT';
 const vaultPhrase = 'DELETE MY VAULT';
@@ -19,17 +20,17 @@ export function PrivacyPanel({ documents: initialDocuments }: { documents: Docum
   const [vaultDialogOpen, setVaultDialogOpen] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  async function deleteDocument() {
+  async function deleteDocument(confirmation: string) {
     if (!documentToDelete) return;
-    const response = await fetch(`/api/documents/${encodeURIComponent(documentToDelete.id)}`, { method: 'DELETE', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ confirmation: documentPhrase }) });
+    const response = await requestDocumentRemoval(fetch, documentToDelete.id, confirmation);
     if (!response.ok) { setMessage(await responseError(response)); return; }
     setDocuments((current) => current.filter((document) => document.id !== documentToDelete.id));
     setMessage(`${documentToDelete.title} and its extracted fields were removed from this local vault.`);
     setDocumentToDelete(null);
   }
 
-  async function deleteVault() {
-    const response = await fetch('/api/vault', { method: 'DELETE', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ confirmation: vaultPhrase }) });
+  async function deleteVault(confirmation: string) {
+    const response = await requestVaultRemoval(fetch, confirmation);
     if (!response.ok) { setMessage(await responseError(response)); return; }
     setDocuments([]);
     setVaultDialogOpen(false);

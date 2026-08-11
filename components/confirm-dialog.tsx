@@ -10,7 +10,7 @@ export function ConfirmDialog({ open, title, description, requiredPhrase, confir
   confirmLabel: string;
   tone?: 'danger' | 'neutral';
   onCancel: () => void;
-  onConfirm: () => Promise<void> | void;
+  onConfirm: (confirmation: string) => Promise<void> | void;
 }) {
   const descriptionId = useId();
   const [typedConfirmation, setTypedConfirmation] = useState('');
@@ -20,7 +20,7 @@ export function ConfirmDialog({ open, title, description, requiredPhrase, confir
 
   async function confirm() {
     setWorking(true);
-    try { await onConfirm(); } finally { setWorking(false); }
+    try { await onConfirm(typedConfirmation); } finally { setWorking(false); }
   }
 
   return (

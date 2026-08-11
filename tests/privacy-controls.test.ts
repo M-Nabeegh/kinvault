@@ -6,8 +6,10 @@ import { createDatabase } from '@/data/db';
 import { DocumentRepository } from '@/data/repository';
 import { DocumentStorage } from '@/services/document-storage';
 import { VaultControls } from '@/services/vault-controls';
+import { requestDocumentRemoval, requestVaultRemoval } from '@/services/privacy-requests';
 import { GET as exportVault } from '../app/api/export/route';
 import { DELETE as deleteVault } from '../app/api/vault/route';
+import { dynamic as privacyPageRendering } from '../app/privacy/page';
 
 const directories: string[] = [];
 
@@ -68,5 +70,24 @@ describe('privacy controls', () => {
 
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toEqual({ error: { code: 'confirmation_required', message: 'Type DELETE MY VAULT exactly to remove this local vault.' } });
+  });
+
+  it('forwards altered and incomplete typed confirmations unchanged instead of replacing them with a hard-coded phrase', async () => {
+    const requests: RequestInit[] = [];
+    const requestClient = async (input: string, init: RequestInit) => {
+      expect(input).toMatch(/^\/api\/(documents\/doc-safe|vault)$/);
+      requests.push(init);
+      return new Response(null, { status: 204 });
+    };
+
+    await requestDocumentRemoval(requestClient, 'doc-safe', 'DELETE DOCUMENT ');
+    await requestVaultRemoval(requestClient, 'DELETE');
+
+    expect(JSON.parse(requests[0].body as string)).toEqual({ confirmation: 'DELETE DOCUMENT ' });
+    expect(JSON.parse(requests[1].body as string)).toEqual({ confirmation: 'DELETE' });
+  });
+
+  it('renders the privacy page dynamically so a full refresh observes a deleted vault', () => {
+    expect(privacyPageRendering).toBe('force-dynamic');
   });
 });
