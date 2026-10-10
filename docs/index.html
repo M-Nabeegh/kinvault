@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KinVault — family documents, answered on your Mac</title>
+  <meta name="description" content="KinVault is a native Mac app that reads passports, ID cards, policies and bills with Apple’s on-device OCR and Apple Intelligence, then answers questions with the exact spot on the page. Nothing leaves your Mac.">
+  <meta name="color-scheme" content="light dark">
+  <meta property="og:title" content="KinVault">
+  <meta property="og:description" content="Ask your family’s documents a question. Get the answer and the page it came from — all on your Mac.">
+  <meta property="og:image" content="https://m-nabeegh.github.io/kinvault/assets/og.jpg">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="assets/icon.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/icon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="bar">
+    <div class="wrap bar-inner">
+      <a class="brand" href="#top" aria-label="KinVault home">
+        <img src="assets/icon.png" alt="" width="28" height="28">
+        <span>KinVault</span>
+      </a>
+      <nav class="bar-links" aria-label="Sections">
+        <a href="#try">Try it</a>
+        <a href="#how">How it reads</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#install">Install</a>
+        <a class="bar-github" href="https://github.com/M-Nabeegh/kinvault">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero wrap">
+      <div class="hero-copy">
+        <p class="platform">For Mac · macOS 26 or later · Apple silicon</p>
+        <h1>Ask your family’s documents a question.</h1>
+        <p class="lede">
+          KinVault reads passports, ID cards, insurance cards and bills with Apple’s on-device text recognition
+          and Apple Intelligence. Every answer comes with the exact spot on the page it was read from.
+        </p>
+        <p class="lede strong">Nothing leaves your Mac. The app has no network access at all.</p>
+        <div class="actions">
+          <a class="button primary" href="#install">Build it on your Mac</a>
+          <a class="button" href="https://github.com/M-Nabeegh/kinvault">Source on GitHub</a>
+        </div>
+      </div>
+      <figure class="hero-shot">
+        <img src="assets/screen-answer.jpg" width="1240" height="780"
+             alt="KinVault answering “When does Dad’s passport expire?” with “14 MAR 2031”, citing the passport’s date of expiry field on page 1.">
+      </figure>
+    </section>
+
+    <section id="try" class="section wrap">
+      <div class="section-head">
+        <h2>Try it on a specimen passport</h2>
+        <p>
+          This is one of the fictional sample documents that ships with the app. The highlighted boxes are the
+          real coordinates KinVault stored after reading it — pick a question to see where each answer comes from.
+        </p>
+      </div>
+
+      <div class="demo">
+        <div class="demo-ask">
+          <div class="questions" role="group" aria-label="Sample questions">
+            <button type="button" data-q="expiry" aria-pressed="true">When does Dad’s passport expire?</button>
+            <button type="button" data-q="number" aria-pressed="false">What is Dad’s passport number?</button>
+            <button type="button" data-q="birth" aria-pressed="false">When was Daniel born?</button>
+            <button type="button" data-q="wifi" aria-pressed="false">What’s the Wi-Fi password?</button>
+          </div>
+          <div class="answer" aria-live="polite">
+            <p class="answer-text" id="answer-text">Dad’s passport expires on 14 MAR 2031.</p>
+            <dl class="answer-source" id="answer-source">
+              <div><dt>Document</dt><dd>Passport · Daniel James Rowan</dd></div>
+              <div><dt>Field</dt><dd id="answer-field">Date of expiry</dd></div>
+              <div><dt>Read as</dt><dd><mark id="answer-value">14 MAR 2031</mark></dd></div>
+              <div><dt>Where</dt><dd id="answer-where">Page 1</dd></div>
+            </dl>
+            <p class="answer-note" id="answer-note">Answered by Apple Intelligence on this Mac · valid for 4 more years</p>
+          </div>
+        </div>
+
+        <figure class="scan">
+          <div class="scan-frame" id="scan">
+            <img src="assets/specimen-passport.jpg" width="1400" height="980"
+                 alt="A fictional passport data page for Daniel James Rowan of the Republic of Arcadia, marked as a specimen.">
+          </div>
+          <figcaption>Specimen data page. Outlined: every detail KinVault found. Filled: the one this answer uses.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="how" class="section wrap">
+      <div class="section-head">
+        <h2>How a document gets read</h2>
+        <p>Four steps, all on your Mac. Drop in a PDF or a photo and it’s filed in a few seconds.</p>
+      </div>
+      <ol class="steps">
+        <li>
+          <h3>Vision finds the text</h3>
+          <p>Apple’s Vision framework recognises every line on every page, with its position and a confidence score.</p>
+        </li>
+        <li>
+          <h3>Apple Intelligence fills in the form</h3>
+          <p>The on-device Foundation Model reads the text and returns structured details: who it belongs to, the type, key numbers and dates.</p>
+        </li>
+        <li>
+          <h3>Every value is found on the page</h3>
+          <p>KinVault matches each value back to the recognised text and checks it sits beside its own label. If it can’t, it doesn’t pretend.</p>
+        </li>
+        <li>
+          <h3>You check what’s uncertain</h3>
+          <p>Low-confidence or misplaced values go to Needs Review, with a crop of the page so you can confirm or correct in one click.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section class="section wrap gallery" aria-label="Screens">
+      <figure class="shot wide">
+        <img src="assets/screen-source.jpg" width="1240" height="780" loading="lazy"
+             alt="The passport open in KinVault: the scanned page on the left with every detail outlined and the expiry date highlighted, the details list on the right.">
+        <figcaption>
+          <strong>Show on page.</strong> Every answer opens the original scan with the detail highlighted, next to everything else read from it.
+        </figcaption>
+      </figure>
+      <figure class="shot">
+        <img src="assets/screen-review.jpg" width="1240" height="780" loading="lazy"
+             alt="The Needs Review screen: three details with crops of the page, including a date of birth that was matched under the Date of Issue label.">
+        <figcaption>
+          <strong>Needs review.</strong> Here the model paired a date with the wrong label. The crop makes the mistake obvious.
+        </figcaption>
+      </figure>
+      <figure class="shot">
+        <img src="assets/screen-library.jpg" width="1240" height="780" loading="lazy"
+             alt="The All Documents table listing six documents with person, type, expiry status and date added.">
+        <figcaption>
+          <strong>One place for everything.</strong> Expired and expiring documents stand out, and each person gets their own list.
+        </figcaption>
+      </figure>
+    </section>
+
+    <section id="privacy" class="section wrap privacy">
+      <div class="section-head">
+        <h2>Private because it can’t connect</h2>
+        <p>KinVault doesn’t ask you to trust a privacy policy. These are properties of the app you can check yourself.</p>
+      </div>
+      <div class="privacy-grid">
+        <dl class="facts">
+          <div>
+            <dt>No network entitlement</dt>
+            <dd>The app runs in the macOS sandbox without <code>network.client</code>, so the system blocks every connection it might try to make.</dd>
+          </div>
+          <div>
+            <dt>On-device model only</dt>
+            <dd>KinVault uses <code>SystemLanguageModel</code>, which runs on your Mac. It never uses Private Cloud Compute.</dd>
+          </div>
+          <div>
+            <dt>No account, no sync</dt>
+            <dd>There’s nothing to sign in to. Documents live in the app’s own container, and the store has CloudKit turned off.</dd>
+          </div>
+          <div>
+            <dt>Kept out of Spotlight</dt>
+            <dd>The vault folder is excluded from indexing. Optional Touch ID lock and expiry reminders are handled by macOS.</dd>
+          </div>
+        </dl>
+        <figure class="code">
+          <figcaption>Packaging/KinVault.entitlements — the complete list</figcaption>
+<pre><code><span class="c">&lt;!-- Sandboxed with no network entitlements --&gt;</span>
+&lt;key&gt;com.apple.security.app-sandbox&lt;/key&gt;
+&lt;true/&gt;
+<span class="c">&lt;!-- Read files you pick or drop, write exports
+     to a folder you choose --&gt;</span>
+&lt;key&gt;com.apple.security.files.user-selected.read-write&lt;/key&gt;
+&lt;true/&gt;</code></pre>
+          <p class="code-check">Check a build: <code>codesign -d --entitlements - KinVault.app</code></p>
+        </figure>
+      </div>
+    </section>
+
+    <section id="install" class="section wrap install">
+      <div class="section-head">
+        <h2>Install</h2>
+        <p>KinVault is built from source with Xcode’s command-line tools. It takes about a minute.</p>
+      </div>
+      <div class="install-grid">
+        <div>
+          <h3>You’ll need</h3>
+          <ul class="needs">
+            <li>A Mac with Apple silicon</li>
+            <li>macOS 26 Tahoe or later</li>
+            <li>Xcode 26 or later</li>
+            <li>Apple Intelligence turned on, for the best reading. Without it, KinVault falls back to label and date patterns.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Build and open</h3>
+<pre class="terminal"><code>git clone https://github.com/M-Nabeegh/kinvault.git
+cd kinvault
+scripts/build-app.sh
+open build/KinVault.app</code></pre>
+          <p class="hint">Then choose <strong>File › Add Sample Documents</strong> to try it with the fictional Rowan family, or drop in your own PDFs and photos.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap foot-inner">
+      <p>KinVault is open source under the MIT licence. Sample documents are fictional.</p>
+      <p><a href="https://github.com/M-Nabeegh/kinvault">github.com/M-Nabeegh/kinvault</a></p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
