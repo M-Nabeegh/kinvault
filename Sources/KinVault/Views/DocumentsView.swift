@@ -60,6 +60,7 @@ struct DocumentTable: View {
     }
 
     var body: some View {
+        let isConfirmingDelete = !pendingDelete.isEmpty
         Group {
             if allDocuments.isEmpty {
                 EmptyVaultView()
@@ -73,7 +74,7 @@ struct DocumentTable: View {
         .searchable(text: $searchText, placement: .toolbar, prompt: "Filter documents")
         .confirmationDialog(
             pendingDelete.count == 1 ? "Delete “\(pendingDelete.first?.title ?? "")”?" : "Delete \(pendingDelete.count) documents?",
-            isPresented: Binding(get: { !pendingDelete.isEmpty }, set: { if !$0 { pendingDelete = [] } })
+            isPresented: Binding(get: { isConfirmingDelete }, set: { if !$0 { pendingDelete = [] } })
         ) {
             Button("Delete", role: .destructive) {
                 pendingDelete.forEach(library.delete)

@@ -12,15 +12,22 @@ public enum ReadingPipeline {
         await progress("Opening pages")
         let images = try PageRenderer.pages(of: url)
 
-        var observations: [TextRecognizer.Observation] = []
+        var lines: [RecognizedLine] = []
+        var observations: [Int: TextRecognizer.Observation] = [:]
         var usedFastRecognition = false
+        let isPDF = PageRenderer.isPDF(url)
         for (index, image) in images.enumerated() {
             await progress(images.count > 1 ? "Reading page \(index + 1) of \(images.count)" : "Reading text")
-            let result = try await TextRecognizer.recognize(image, page: index, startingID: observations.count)
-            observations += result.observations
+            // Digital PDFs already contain their text; only scans need OCR.
+            if isPDF, let layer = PDFTextLayer.lines(page: index, of: url, startingID: lines.count) {
+                lines += layer
+                continue
+            }
+            let result = try await TextRecognizer.recognize(image, page: index, startingID: lines.count)
+            lines += result.observations.map(\.line)
+            for observation in result.observations { observations[observation.line.id] = observation }
             usedFastRecognition = usedFastRecognition || result.level == .fast
         }
-        let lines = observations.map(\.line)
         let order = DateReader.inferOrder(in: lines.map(\.text))
 
         var draft: ExtractionDraft
@@ -43,9 +50,9 @@ public enum ReadingPipeline {
         }
 
         await progress("Finding each detail on the page")
-        let byID = Dictionary(uniqueKeysWithValues: observations.map { ($0.line.id, $0) })
+        let ocr = observations
         let fields = FieldLocator.locate(draft.fields, in: lines, order: order) { id, range in
-            byID[id]?.box(for: range)
+            ocr[id]?.box(for: range)
         }
 
         // A date printed right beside an "expiry" or "issued" label beats the model's choice.

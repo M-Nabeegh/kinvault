@@ -19,6 +19,8 @@ final class VaultDocument {
     var importedAt: Date
     var originalFilename: String
     var storedFilename: String
+    /// SHA-256 of the original file. Optional so vaults created before it existed still open.
+    var contentHash: String?
     var pageCount: Int
     var stateRaw: String
     var progressNote: String

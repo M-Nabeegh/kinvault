@@ -11,6 +11,8 @@ struct RootView: View {
 
     var body: some View {
         @Bindable var navigator = navigator
+        // Read here, not inside the binding's closure, so SwiftUI re-renders when it changes.
+        let errorMessage = library.lastError
 
         ZStack {
             NavigationSplitView {
@@ -49,12 +51,12 @@ struct RootView: View {
             return !providers.isEmpty
         }
         .alert(
-            "Something went wrong",
-            isPresented: Binding(get: { library.lastError != nil }, set: { if !$0 { library.lastError = nil } })
+            library.lastErrorTitle,
+            isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { library.lastError = nil } })
         ) {
             Button("OK") { library.lastError = nil }
         } message: {
-            Text(library.lastError ?? "")
+            Text(errorMessage ?? "")
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             library.refreshModelStatus()

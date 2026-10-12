@@ -14,8 +14,8 @@ enum Reminders {
     }
 
     private static var center: UNUserNotificationCenter? {
-        // Notifications need a real app bundle; `swift run` builds don't have one.
-        Bundle.main.bundleIdentifier == nil ? nil : .current()
+        // Notifications need a real app bundle; `swift run` builds and test runners don't have one.
+        Bundle.main.bundleURL.pathExtension == "app" ? .current() : nil
     }
 
     static func requestPermission() async -> Bool {

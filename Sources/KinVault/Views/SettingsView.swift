@@ -5,8 +5,8 @@ import SwiftUI
 struct SettingsView: View {
     var body: some View {
         TabView {
-            Tab("General", systemImage: "gearshape") { GeneralSettings() }
-            Tab("Privacy", systemImage: "hand.raised") { PrivacySettings() }
+            Tab("General", systemImage: "gearshape") { GeneralSettings().frame(height: 300) }
+            Tab("Privacy", systemImage: "hand.raised") { PrivacySettings().frame(height: 480) }
         }
         .frame(width: 520)
         .scenePadding()

@@ -10,12 +10,24 @@ final class Library {
     private(set) var modelStatus: OnDeviceModel.Status = OnDeviceModel.status
     private(set) var isReading = false
     var lastError: String?
+    var lastErrorTitle = "Something went wrong"
 
     private var queue: [UUID] = []
+    /// Tests turn this off so results don't depend on whether Apple Intelligence is available.
+    let useAppleIntelligence: Bool
 
-    init(context: ModelContext) {
+    init(context: ModelContext, useAppleIntelligence: Bool = true) {
         self.context = context
+        self.useAppleIntelligence = useAppleIntelligence
         resumeUnfinishedReads()
+    }
+
+    /// True while anything is queued or being read.
+    var isBusy: Bool { isReading || !queue.isEmpty }
+
+    /// Waits for every queued document to finish reading.
+    func waitUntilIdle() async {
+        while isBusy { try? await Task.sleep(for: .milliseconds(100)) }
     }
 
     func refreshModelStatus() {
@@ -27,25 +39,42 @@ final class Library {
     @discardableResult
     func importFiles(_ urls: [URL]) -> Int {
         var imported = 0
-        var skipped: [String] = []
+        var unsupported: [String] = []
+        var duplicates: [String] = []
+        let existing = (try? context.fetch(FetchDescriptor<VaultDocument>())) ?? []
+        var knownHashes = Set(existing.compactMap(\.contentHash))
+
         for url in urls {
             guard PageRenderer.isSupported(url) else {
-                skipped.append(url.lastPathComponent)
+                unsupported.append(url.lastPathComponent)
                 continue
             }
             do {
-                let stored = try VaultFiles.importCopy(of: url)
-                let document = VaultDocument(originalFilename: url.lastPathComponent, storedFilename: stored)
+                if knownHashes.contains(try VaultFiles.contentHash(of: url)) {
+                    duplicates.append(url.lastPathComponent)
+                    continue
+                }
+                let copy = try VaultFiles.importCopy(of: url)
+                let document = VaultDocument(originalFilename: url.lastPathComponent, storedFilename: copy.storedFilename)
+                document.contentHash = copy.contentHash
+                knownHashes.insert(copy.contentHash)
                 context.insert(document)
                 queue.append(document.id)
                 imported += 1
             } catch {
-                lastError = "Couldn't add \(url.lastPathComponent): \(error.localizedDescription)"
+                lastErrorTitle = "Something went wrong"
+                lastError = "Couldn’t add \(url.lastPathComponent): \(error.localizedDescription)"
             }
         }
-        if !skipped.isEmpty {
-            lastError = "KinVault reads PDFs and images. Skipped \(skipped.joined(separator: ", "))."
+
+        var notes: [String] = []
+        if !unsupported.isEmpty { notes.append("KinVault reads PDFs and images, so it skipped \(unsupported.joined(separator: ", ")).") }
+        if !duplicates.isEmpty { notes.append("Already in your vault: \(duplicates.joined(separator: ", ")).") }
+        if !notes.isEmpty {
+            lastErrorTitle = imported == 0 ? "Nothing was added" : "Some files weren’t added"
+            lastError = notes.joined(separator: " ")
         }
+
         save()
         processQueue()
         return imported
@@ -82,7 +111,7 @@ final class Library {
             refreshModelStatus()
 
             do {
-                let reading = try await ReadingPipeline.read(url) { [weak self] note in
+                let reading = try await ReadingPipeline.read(url, useAppleIntelligence: useAppleIntelligence) { [weak self] note in
                     await self?.setProgress(note, for: id)
                 }
                 guard let document = self.document(id) else { return }
@@ -151,6 +180,13 @@ final class Library {
         return [first, last]
     }
 
+    func retitle(_ document: VaultDocument, to title: String) {
+        let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        document.title = trimmed
+        save()
+    }
+
     func rename(_ document: VaultDocument, holder: String) {
         let name = holder.trimmingCharacters(in: .whitespacesAndNewlines)
         document.holderName = name.isEmpty ? "" : ensurePerson(named: name).name
@@ -172,6 +208,20 @@ final class Library {
         field.value = trimmed
         field.needsReview = false
         field.reviewedAt = .now
+
+        // Point the field at where the corrected value is printed, or nowhere if it isn't.
+        if let document = field.document {
+            let located = FieldLocator.locate(
+                [FieldDraft(label: field.label, value: trimmed, type: field.type)],
+                in: document.lines,
+                order: DateReader.inferOrder(in: document.lines.map(\.text))
+            ).first
+            field.page = located?.page
+            field.boxX = located?.box?.x
+            field.boxY = located?.box?.y
+            field.boxWidth = located?.box?.width
+            field.boxHeight = located?.box?.height
+        }
 
         // Correcting the expiry field updates the document's expiry too.
         if field.type == .date, let document = field.document, let date = DateReader.date(from: trimmed, order: .current) {
@@ -228,9 +278,10 @@ final class Library {
 
     func eraseEverything() {
         queue.removeAll()
-        try? context.delete(model: DocumentField.self)
-        try? context.delete(model: VaultDocument.self)
-        try? context.delete(model: Person.self)
+        // One by one, so SwiftData applies the cascade rules; a batch delete trips over the
+        // document ↔ field relationship.
+        for document in (try? context.fetch(FetchDescriptor<VaultDocument>())) ?? [] { context.delete(document) }
+        for person in (try? context.fetch(FetchDescriptor<Person>())) ?? [] { context.delete(person) }
         save()
         VaultFiles.removeAllOriginals()
         Reminders.cancelAll()
@@ -243,6 +294,11 @@ final class Library {
     }
 
     func save() {
-        do { try context.save() } catch { lastError = "Couldn't save: \(error.localizedDescription)" }
+        do {
+            try context.save()
+        } catch {
+            lastErrorTitle = "Something went wrong"
+            lastError = "Couldn’t save: \(error.localizedDescription)"
+        }
     }
 }

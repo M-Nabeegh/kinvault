@@ -46,7 +46,7 @@ public enum PageRenderer {
         return image
     }
 
-    private static func isPDF(_ url: URL) -> Bool {
+    static func isPDF(_ url: URL) -> Bool {
         UTType(filenameExtension: url.pathExtension.lowercased())?.conforms(to: .pdf) ?? false
     }
 

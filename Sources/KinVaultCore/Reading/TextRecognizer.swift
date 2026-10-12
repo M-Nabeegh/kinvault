@@ -8,11 +8,12 @@ public enum TextRecognizer {
     /// A recognised line plus the Vision candidate, which can box any substring precisely.
     public struct Observation: @unchecked Sendable {
         public var line: RecognizedLine
-        let candidate: RecognizedText
+        /// Nil when the line's text was replaced by a re-read of a crop.
+        let candidate: RecognizedText?
 
         /// The box around `range` within this line, if Vision can resolve it.
         func box(for range: Range<String.Index>) -> PageBox? {
-            guard let rect = candidate.boundingBox(for: range)?.boundingBox else { return nil }
+            guard let rect = candidate?.boundingBox(for: range)?.boundingBox else { return nil }
             return PageBox(normalizedLowerLeft: rect.cgRect)
         }
     }
@@ -24,9 +25,10 @@ public enum TextRecognizer {
     /// Set once accurate recognition has failed to respond, so later pages go straight to fast.
     private static let accurateUnresponsive = Mutex(false)
 
-    /// How long to wait for accurate recognition before falling back to fast.
-    /// Some macOS 27.0 builds can deadlock inside the accurate recogniser.
-    static let accurateTimeout: Duration = .seconds(20)
+    /// How long to wait for accurate recognition before falling back to fast. The first request
+    /// after a restart compiles the model for the Neural Engine, which can take 10–15 seconds;
+    /// some macOS 27.0 builds deadlock in that step and never return.
+    static let accurateTimeout: Duration = .seconds(45)
 
     public static func recognize(_ image: CGImage, page: Int, startingID: Int = 0) async throws -> (observations: [Observation], level: Level) {
         if !accurateUnresponsive.withLock({ $0 }) {
@@ -44,7 +46,10 @@ public enum TextRecognizer {
         var request = RecognizeTextRequest()
         request.recognitionLevel = level == .accurate ? .accurate : .fast
         request.usesLanguageCorrection = level == .accurate
-        request.automaticallyDetectsLanguage = level == .accurate
+        // Automatic detection guesses per line and can pick the wrong script for lines that are
+        // mostly digits ("12,360.00" came back as "12,360.0ąłł"), so use the Mac's languages.
+        request.automaticallyDetectsLanguage = false
+        request.recognitionLanguages = recognitionLanguages(supported: request.supportedRecognitionLanguages)
 
         let observations = try await request.perform(on: image)
         let lines: [(RecognizedText, PageBox)] = observations.compactMap { observation in
@@ -59,7 +64,7 @@ public enum TextRecognizer {
             return a.1.y < b.1.y
         }
 
-        return ordered.enumerated().map { offset, item in
+        var result = ordered.enumerated().map { offset, item in
             Observation(
                 line: RecognizedLine(
                     id: startingID + offset,
@@ -71,6 +76,72 @@ public enum TextRecognizer {
                 candidate: item.0
             )
         }
+
+        // Vision sometimes garbles a whole line of figures ("12,360.00" → "12,360.0ąłł") yet
+        // reads the same line perfectly on its own. Re-read those lines from a tight crop.
+        for index in result.indices.prefix(200) where looksGarbled(result[index].line.text) {
+            guard let crop = crop(image, to: result[index].line.box),
+                  let reread = try? await request.perform(on: crop)
+                    .compactMap({ $0.topCandidates(1).first })
+                    .max(by: { $0.string.count < $1.string.count }),
+                  garbledScore(reread.string) < garbledScore(result[index].line.text),
+                  abs(reread.string.count - result[index].line.text.count) <= 4 else { continue }
+            result[index].line.text = reread.string
+            result[index].line.confidence = Double(reread.confidence)
+            result[index] = Observation(line: result[index].line, candidate: nil)
+        }
+        return result
+    }
+
+    /// Characters beyond Latin-1 sitting right next to a digit, the signature of a garbled
+    /// figure. Ordinary text in any script never scores, because it doesn't touch digits.
+    static func garbledScore(_ text: String) -> Int {
+        let characters = Array(text)
+        var score = 0
+        for (index, character) in characters.enumerated() where character.isLetter && !isLatin1(character) {
+            let before = index > 0 ? characters[index - 1] : " "
+            let after = index + 1 < characters.count ? characters[index + 1] : " "
+            if before.isNumber || after.isNumber || (before.isLetter && !isLatin1(before)) && score > 0 { score += 1 }
+        }
+        return score
+    }
+
+    static func looksGarbled(_ text: String) -> Bool { garbledScore(text) > 0 }
+
+    private static func isLatin1(_ character: Character) -> Bool {
+        character.unicodeScalars.allSatisfy { $0.value <= 0xFF }
+    }
+
+    /// The line's box grown by half its height on every side, in image pixels.
+    static func crop(_ image: CGImage, to box: PageBox) -> CGImage? {
+        let width = Double(image.width), height = Double(image.height)
+        let pad = box.height * 0.5
+        let rect = CGRect(
+            x: (box.x - pad * height / width) * width,
+            y: (box.y - pad) * height,
+            width: (box.width + 2 * pad * height / width) * width,
+            height: (box.height + 2 * pad) * height
+        ).integral.intersection(CGRect(x: 0, y: 0, width: width, height: height))
+        guard !rect.isEmpty else { return nil }
+        return image.cropping(to: rect)
+    }
+}
+
+extension TextRecognizer {
+    /// The person's preferred languages that Vision can read, always ending with English, which
+    /// most official documents include.
+    static func recognitionLanguages(
+        supported: [Locale.Language],
+        preferred: [String] = Locale.preferredLanguages
+    ) -> [Locale.Language] {
+        var output: [Locale.Language] = []
+        for identifier in preferred + ["en-US"] {
+            let language = Locale.Language(identifier: identifier)
+            let match = supported.first { $0.minimalIdentifier == language.minimalIdentifier }
+                ?? supported.first { $0.languageCode == language.languageCode }
+            if let match, !output.contains(match) { output.append(match) }
+        }
+        return output.isEmpty ? [Locale.Language(identifier: "en-US")] : output
     }
 }
 

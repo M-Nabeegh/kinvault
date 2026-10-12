@@ -8,6 +8,7 @@ struct DocumentDetailView: View {
     @Query private var matches: [VaultDocument]
     @State private var selectedFieldID: UUID?
     @State private var confirmDelete = false
+    @State private var confirmReread = false
 
     init(documentID: UUID, initialFieldID: UUID?) {
         _matches = Query(filter: #Predicate<VaultDocument> { $0.id == documentID })
@@ -26,7 +27,13 @@ struct DocumentDetailView: View {
             .navigationSubtitle(document.displayHolder)
             .toolbar {
                 ToolbarItemGroup {
-                    Button { library.reread(document) } label: {
+                    Button {
+                        if document.fields.contains(where: { $0.wasCorrected || $0.reviewedAt != nil }) {
+                            confirmReread = true
+                        } else {
+                            library.reread(document)
+                        }
+                    } label: {
                         Label("Read Again", systemImage: "arrow.clockwise")
                     }
                     .help("Run OCR and Apple Intelligence on this document again")
@@ -42,6 +49,11 @@ struct DocumentDetailView: View {
                     }
                     .help("Delete this document")
                 }
+            }
+            .confirmationDialog("Read “\(document.title)” again?", isPresented: $confirmReread) {
+                Button("Read Again") { library.reread(document) }
+            } message: {
+                Text("Every detail is read fresh from the page, replacing the ones you’ve checked or corrected.")
             }
             .confirmationDialog("Delete “\(document.title)”?", isPresented: $confirmDelete) {
                 Button("Delete", role: .destructive) {
@@ -157,6 +169,7 @@ private struct DocumentInspector: View {
     @Bindable var document: VaultDocument
     @Binding var selectedFieldID: UUID?
     @State private var holderDraft = ""
+    @State private var titleDraft = ""
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -187,17 +200,23 @@ private struct DocumentInspector: View {
             }
         }
         .background(.background)
-        .onAppear { holderDraft = document.holderName }
+        .onAppear {
+            holderDraft = document.holderName
+            titleDraft = document.title
+        }
         .onChange(of: document.holderName) { _, name in holderDraft = name }
+        .onChange(of: document.title) { _, title in titleDraft = title }
     }
 
     private var header: some View {
         HStack(alignment: .top, spacing: 12) {
             KindIcon(kind: document.kind, size: 40)
             VStack(alignment: .leading, spacing: 4) {
-                Text(document.title)
+                TextField("Title", text: $titleDraft)
+                    .textFieldStyle(.plain)
                     .font(.title2.weight(.semibold))
-                    .textSelection(.enabled)
+                    .onSubmit { library.retitle(document, to: titleDraft) }
+                    .help("Rename this document")
                 if !document.summary.isEmpty {
                     Text(document.summary)
                         .foregroundStyle(.secondary)

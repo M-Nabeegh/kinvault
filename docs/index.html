@@ -95,12 +95,12 @@
     <section id="how" class="section wrap">
       <div class="section-head">
         <h2>How a document gets read</h2>
-        <p>Four steps, all on your Mac. Drop in a PDF or a photo and it’s filed in a few seconds.</p>
+        <p>Four steps, all on your Mac. Drop a PDF or a photo on the window or the Dock icon and it’s filed in a few seconds.</p>
       </div>
       <ol class="steps">
         <li>
           <h3>Vision finds the text</h3>
-          <p>Apple’s Vision framework recognises every line on every page, with its position and a confidence score.</p>
+          <p>Apple’s Vision framework recognises every line on every page, with its position and a confidence score. Digital PDFs are read straight from their own text.</p>
         </li>
         <li>
           <h3>Apple Intelligence fills in the form</h3>
@@ -201,6 +201,7 @@ cd kinvault
 scripts/build-app.sh
 open build/KinVault.app</code></pre>
           <p class="hint">Then choose <strong>File › Add Sample Documents</strong> to try it with the fictional Rowan family, or drop in your own PDFs and photos.</p>
+          <p class="hint">Prefer Terminal? <code>swift build -c release --product kinvault-cli</code> builds a command-line tool that reads a document or answers a question and prints JSON.</p>
         </div>
       </div>
     </section>

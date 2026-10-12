@@ -2,8 +2,18 @@ import KinVaultCore
 import SwiftData
 import SwiftUI
 
+/// Files dropped on the Dock icon or opened with “Open With › KinVault” in Finder.
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    var library: Library?
+
+    func application(_ application: NSApplication, open urls: [URL]) {
+        library?.importFiles(urls)
+    }
+}
+
 @main
 struct KinVaultApp: App {
+    @NSApplicationDelegateAdaptor private var appDelegate: AppDelegate
     private let container: ModelContainer
     @State private var library: Library
     @State private var lock = VaultLock()
@@ -26,6 +36,7 @@ struct KinVaultApp: App {
     var body: some Scene {
         Window("KinVault", id: "main") {
             RootView()
+                .onAppear { appDelegate.library = library }
                 .environment(library)
                 .environment(lock)
                 .environment(navigator)
