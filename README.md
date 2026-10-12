@@ -7,7 +7,7 @@
     Apple Intelligence. Nothing leaves your Mac — the app has no network access at all.
   </p>
   <p>
-    <a href="https://m-nabeegh.github.io/kinvault/"><strong>Website</strong></a> ·
+    <a href="https://m-nabeegh.gitlab.io/kinvault/"><strong>Website</strong></a> ·
     <a href="#install">Install</a> ·
     <a href="#how-it-works">How it works</a> ·
     <a href="#privacy">Privacy</a>
@@ -38,7 +38,7 @@ It also keeps an eye on expiry dates, groups documents by person (with nicknames
 Turn on Apple Intelligence (System Settings › Apple Intelligence & Siri) for the best results; without it, KinVault falls back to label-and-date patterns.
 
 ```bash
-git clone https://github.com/M-Nabeegh/kinvault.git
+git clone https://gitlab.com/M-Nabeegh/kinvault.git
 cd kinvault
 scripts/build-app.sh
 open build/KinVault.app
@@ -88,7 +88,7 @@ Tests/
   KinVaultAppTests/      The app's vault: import, duplicates, review, nicknames, delete, erase, export
 Packaging/               Info.plist, entitlements, app icon
 scripts/                 build-app.sh, make-icon.swift
-docs/                    The GitHub Pages site
+docs/                    The project website (GitLab Pages)
 ```
 
 ### Command line
