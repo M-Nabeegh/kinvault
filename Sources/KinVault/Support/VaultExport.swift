@@ -28,6 +28,25 @@ enum VaultExport {
         var documents: [Document]
     }
 
+    /// Every document with an expiry date, as calendar entries.
+    static func calendarEntries(for documents: [VaultDocument]) -> [ExpiryCalendar.Entry] {
+        documents.compactMap { document in
+            guard document.state == .ready, let expiry = document.expiryDate else { return nil }
+            return ExpiryCalendar.Entry(
+                id: document.id.uuidString, title: document.title,
+                holder: document.holderName, expiry: expiry
+            )
+        }
+    }
+
+    /// Writes the expiry dates to an .ics file and returns how many events it holds.
+    @discardableResult
+    static func writeCalendar(_ documents: [VaultDocument], to file: URL) throws -> Int {
+        let entries = calendarEntries(for: documents)
+        try Data(ExpiryCalendar.ics(entries).utf8).write(to: file, options: .atomic)
+        return entries.count
+    }
+
     static func write(_ documents: [VaultDocument], to folder: URL) throws -> URL {
         let accessing = folder.startAccessingSecurityScopedResource()
         defer { if accessing { folder.stopAccessingSecurityScopedResource() } }

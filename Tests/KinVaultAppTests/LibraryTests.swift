@@ -215,4 +215,18 @@ final class LibraryTests {
         #expect(passport["expiryDate"] as? String == "2031-03-14")
         #expect((passport["fields"] as? [[String: Any]])?.isEmpty == false)
     }
+
+    @Test func calendarFileHoldsEveryExpiryDate() async throws {
+        _ = await importSamples()
+        let file = root.appending(path: "expiry.ics")
+        let count = try VaultExport.writeCalendar(documents, to: file)
+        #expect(count == documents.filter { $0.expiryDate != nil }.count)
+        #expect(count > 0)
+
+        let ics = try String(contentsOf: file, encoding: .utf8)
+        #expect(ics.components(separatedBy: "BEGIN:VEVENT").count - 1 == count)
+        #expect(ics.contains("DTSTART;VALUE=DATE:20310314"))
+        let passport = try document(.passport)
+        #expect(ics.contains("UID:\(passport.id.uuidString)@kinvault"))
+    }
 }

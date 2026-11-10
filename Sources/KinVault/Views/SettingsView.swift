@@ -1,6 +1,7 @@
 import KinVaultCore
 import SwiftData
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct SettingsView: View {
     var body: some View {
@@ -68,6 +69,10 @@ private struct PrivacySettings: View {
                 LabeledContent("Export a copy") {
                     Button("Export…", action: export)
                 }
+                LabeledContent("Expiry dates for Calendar") {
+                    Button("Save Calendar File…", action: exportCalendar)
+                        .disabled(VaultExport.calendarEntries(for: documents).isEmpty)
+                }
                 if let exportMessage {
                     Text(exportMessage).font(.caption).foregroundStyle(.secondary)
                 }
@@ -82,6 +87,20 @@ private struct PrivacySettings: View {
             Button("Erase Vault", role: .destructive) { library.eraseEverything() }
         } message: {
             Text("Every original file, every detail KinVault read and every person is deleted from this Mac. This can’t be undone.")
+        }
+    }
+
+    private func exportCalendar() {
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.calendarEvent]
+        panel.nameFieldStringValue = "KinVault expiry dates.ics"
+        panel.message = "Open the file to add every expiry date to Calendar, with a reminder 30 days before."
+        guard panel.runModal() == .OK, let file = panel.url else { return }
+        do {
+            let count = try VaultExport.writeCalendar(documents, to: file)
+            exportMessage = "Saved \(count) expiry \(count == 1 ? "date" : "dates") to “\(file.lastPathComponent)”."
+        } catch {
+            exportMessage = "Couldn’t save the calendar file: \(error.localizedDescription)"
         }
     }
 
