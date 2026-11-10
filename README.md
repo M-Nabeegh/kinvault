@@ -25,7 +25,7 @@ Drop in a PDF, a scan or a phone photo of a document — onto the window, onto t
 - **asks you to check** anything it isn’t sure about, with a crop of the page beside the value;
 - **answers questions** like “When does Dad’s passport expire?” or “What is Sana’s licence number?”, citing the source field — or says **Not found in the vault** instead of guessing.
 
-It also keeps an eye on expiry dates, groups documents by person (with nicknames like *Dad* or *Ammi*), notices when you add the same file twice, and can remind you before something lapses.
+It also keeps an eye on expiry dates, groups documents by person (with nicknames like *Dad* or *Ammi*), notices when you add the same file twice, and can remind you before something lapses. **Settings › Privacy › Save Calendar File** writes every expiry date to an `.ics` file for Calendar, with a reminder 30 days before each one.
 
 | Show on page | Needs review |
 | --- | --- |
@@ -34,17 +34,26 @@ It also keeps an eye on expiry dates, groups documents by person (with nicknames
 
 ## Install
 
-**Requirements:** a Mac with Apple silicon, macOS 26 Tahoe or later, Xcode 26 or later.
+**Requirements:** a Mac with Apple silicon and macOS 26 Tahoe or later.
 Turn on Apple Intelligence (System Settings › Apple Intelligence & Siri) for the best results; without it, KinVault falls back to label-and-date patterns.
 
+1. Download `KinVault.dmg` from the [latest release](https://github.com/M-Nabeegh/kinvault/releases/latest), open it and drag **KinVault** onto **Applications**.
+2. Open KinVault. The app is signed ad hoc and not notarized by Apple, so the first time macOS says it can't verify the developer. Click **Done**, go to **System Settings › Privacy & Security**, scroll to “KinVault was blocked” and click **Open Anyway**. You only do this once.
+
+Each release lists SHA-256 checksums in `SHA256SUMS.txt`.
+
+### Build from source
+
+Needs Xcode 26 or later.
+
 ```bash
-git clone https://gitlab.com/M-Nabeegh/kinvault.git
+git clone https://github.com/M-Nabeegh/kinvault.git
 cd kinvault
 scripts/build-app.sh
 open build/KinVault.app
 ```
 
-`build-app.sh` compiles a release build with SwiftPM, wraps it in `build/KinVault.app`, and signs it ad hoc with the sandbox entitlements. Add `--zip` to also produce `build/KinVault.zip`. Move the app to `/Applications` if you want to keep it.
+`build-app.sh` compiles a release build with SwiftPM, wraps it in `build/KinVault.app`, and signs it ad hoc with the sandbox entitlements. Add `--zip` or `--dmg` to also produce `build/KinVault.zip` or `build/KinVault.dmg`. Move the app to `/Applications` if you want to keep it.
 
 To try it without your own documents, choose **File › Add Sample Documents**. That imports six fictional documents for the Rowan family of the made-up Republic of Arcadia, drawn as images and read through the real pipeline.
 
@@ -77,7 +86,7 @@ Sources/
   KinVaultCore/          Platform logic, no UI. Fully unit-tested.
     Reading/             PageRenderer, TextRecognizer, DateReader, FieldLocator, PatternReader, ReadingPipeline
     Intelligence/        OnDeviceModel, IntelligenceReader
-    Search/              Fact, Retrieval, Answerer, Expiry
+    Search/              Fact, Retrieval, Answerer, Expiry, ExpiryCalendar
   kinvault-cli/          Command-line front end to KinVaultCore (JSON output)
   KinVault/              The SwiftUI app
     Support/             SwiftData models, Library (import queue), files, lock, reminders, export
@@ -87,7 +96,7 @@ Tests/
   KinVaultCoreTests/     Unit tests, end-to-end reading of generated images and PDFs, on-device model tests
   KinVaultAppTests/      The app's vault: import, duplicates, review, nicknames, delete, erase, export
 Packaging/               Info.plist, entitlements, app icon
-scripts/                 build-app.sh, make-icon.swift
+scripts/                 build-app.sh (app, zip, dmg), make-icon.swift
 docs/                    The project website (GitLab Pages)
 ```
 
@@ -122,6 +131,7 @@ These are properties of the build, not promises:
 - **Out of Spotlight.** The vault folder carries `.metadata_never_index`.
 - **Optional extras stay local.** Touch ID lock uses LocalAuthentication; expiry reminders are scheduled by macOS with UserNotifications.
 - **Your data is portable.** Settings › Privacy exports the original files plus a readable `vault.json`, and can erase everything.
+- **Not separately encrypted.** Originals and the SwiftData store are ordinary files inside the app's sandbox container. They are protected by the sandbox and by FileVault if it is on, not by a vault password of their own, so keep FileVault enabled.
 
 ## Known limits
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Builds KinVault.app into ./build, signed ad hoc with the sandbox entitlements.
-# Usage: scripts/build-app.sh [--zip]
+# Usage: scripts/build-app.sh [--zip] [--dmg]
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -20,7 +20,25 @@ codesign --force --sign - --options runtime \
 
 echo "Built $APP"
 
-if [[ "${1:-}" == "--zip" ]]; then
-  ditto -c -k --keepParent "$APP" build/KinVault.zip
-  echo "Zipped build/KinVault.zip"
-fi
+for option in "$@"; do
+  case "$option" in
+    --zip)
+      rm -f build/KinVault.zip
+      ditto -c -k --keepParent "$APP" build/KinVault.zip
+      echo "Zipped build/KinVault.zip"
+      ;;
+    --dmg)
+      STAGE="$(mktemp -d)"
+      cp -R "$APP" "$STAGE/KinVault.app"
+      ln -s /Applications "$STAGE/Applications"
+      rm -f build/KinVault.dmg
+      hdiutil create -quiet -volname "KinVault" -srcfolder "$STAGE" -format UDZO build/KinVault.dmg
+      rm -rf "$STAGE"
+      echo "Packaged build/KinVault.dmg"
+      ;;
+    *)
+      echo "Unknown option: $option" >&2
+      exit 1
+      ;;
+  esac
+done
